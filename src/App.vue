@@ -3,30 +3,30 @@ import {computed, ref} from 'vue';
 import ArrangeList from './components/ArrangeList.vue';
 import { Arrangeable } from './components/useDragging';
 
-type ItemType = { id: number; cap: string, done?: boolean }
+type ItemType = { order: number; cap: string, done?: boolean }
 
 const database = ref<ItemType[]>([
-  { id: 1, cap: "Fix this code" },
-  { id: 2, cap: "Deploy to production" },
-  { id: 3, cap: "Be awesome" },
-  { id: 4, cap: "Relax" },
-  { id: 5, cap: "Set up Vue project", done: true },
+  { order: 0, cap: "Fix this code" },
+  { order: 1, cap: "Deploy to production" },
+  { order: 2, cap: "Be awesome" },
+  { order: 3, cap: "Relax" },
+  { order: 0, cap: "Set up Vue project", done: true },
 ]);
 let id = database.value.length + 1;
 
 const todoItems = computed<ItemType[]>(()=>{
-  return database.value.filter((item: ItemType)=>!item.done);
+  return database.value.filter((item: ItemType)=>!item.done).sort((a, b) => a.order - b.order);
 })
 
 const doneItems = computed<ItemType[]>(()=>{
-  return database.value.filter((item: ItemType)=>item.done);
+  return database.value.filter((item: ItemType)=>item.done).sort((a, b) => a.order - b.order);
 })
 
 const addItem = ($event: InputEvent, done?: boolean) => {
   database.value = [
     ...database.value, 
     {
-      id: id++,
+      order: id++,
       cap: (<HTMLInputElement>$event.target)?.value,
       done,
     },
@@ -35,18 +35,15 @@ const addItem = ($event: InputEvent, done?: boolean) => {
 }
 
 const dropItem = (item: Arrangeable<ItemType>) => {
-  console.log("dropping Item from done list", item, item.destination)
-  if(item.destination === doneList) {
-    console.log('dropping on done list')
-    database.value[database.value.indexOf(item.payload)].done = true;
-    return;
+  if(item.toIndex !== undefined) {
+    const targetList = item.destination === doneList ? doneItems : todoItems;
+    const done = item.destination === doneList ? true : false;
+    for(let i = item.fromIndex; i < targetList.value.length; i++) {
+      database.value[database.value.indexOf(targetList.value[i])].order = i + 1;
+    }
+    database.value[database.value.indexOf(item.payload)].done = done;
+    database.value[database.value.indexOf(item.payload)].order = item.toIndex;
   }
-  if(item.destination === todoList) {
-    console.log('dropping on todo list')
-    database.value[database.value.indexOf(item.payload)].done = false;
-    return;
-  }
-  database.value = database.value;
 }
 
 const todoList = Symbol();

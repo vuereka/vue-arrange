@@ -99,7 +99,9 @@ const pickUpItem = (
   dragging.value = {
     payload: payload,
     origin: props.name,
+    destination: props.name,
     fromIndex: itemsList.value.indexOf(payload),
+    toIndex: itemsList.value.indexOf(payload),
     targets: [props.targets ?? props.group ?? props.name].flat(),
     key,
   }
@@ -141,7 +143,10 @@ useEventListener(document, "mouseup", () => {
     else if(!itemsList.value.includes(dragging.value.payload)) {
       keyItemsList.value = [
         ...keyItemsList.value.slice(0, dragging.value.fromIndex),
-        dragging.value.payload,
+        {
+          payload: dragging.value.payload,
+          key: dragging.value.key,
+        },
         ...keyItemsList.value.slice(dragging.value.fromIndex),
       ]
     }
