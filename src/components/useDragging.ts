@@ -15,6 +15,7 @@ export interface Arrangeable<PayloadType> {
   toIndex?: number;
   destination?: string | symbol;
   targets: Array<string|symbol>;
+  key: symbol;
 };
 
 export type ArrangeableType = Arrangeable<any>;

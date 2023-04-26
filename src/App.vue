@@ -61,7 +61,7 @@ const dropzones = Symbol();
       :list="todoItems" 
       :name="todoList"
       :group="dropzones"
-      :options="{ key: 'id', hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass' }" 
+      :options="{ hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass' }" 
       @drop-item="dropItem"
     >
       <template #default="{ item }">
@@ -82,7 +82,7 @@ const dropzones = Symbol();
       :list="doneItems" 
       :name="doneList"
       :group="dropzones"
-      :options="{ key: 'id', hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass' }" 
+      :options="{ hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass' }" 
       v-slot="{ item }"
       @drop-item="dropItem"
     >
