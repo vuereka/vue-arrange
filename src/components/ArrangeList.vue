@@ -2,7 +2,7 @@
 import { useMouse, useEventListener } from "@vueuse/core";
 import { ref, toRaw, onMounted, watch, computed } from "vue";
 import { useDragging, type Arrangeable } from "./useDragging";
-import HoverItem from './HoverItem.vue'
+import HoverItem, { type RelativePosition } from './HoverItem.vue'
 
 // TODO: any way we can use a generic in stead of unknown here? Would be great to assure it at least contains the key in the options.
 interface ArrangeableOptions {
@@ -31,10 +31,19 @@ const props = withDefaults(defineProps<{
   }),
 })
 
+const emit = defineEmits<{
+  (e: "dropItem", item: Arrangeable<PayloadType>): void;
+}>();
+
 const mouse = useMouse();
 const { dragging, isDragging } = useDragging<PayloadType>();
 const keyItemsList = ref<KeyItem[]>([]);
-const itemsList = computed(() => keyItemsList.value.map(({payload})=>payload))
+const arrangedItems = computed(() => keyItemsList.value.map(({payload})=>payload))
+
+defineExpose({
+  arrangedItems,
+  dragging,
+})
 
 function populateList(newList: PayloadType[]) {
   dragging.value = undefined;
@@ -51,38 +60,32 @@ function populateList(newList: PayloadType[]) {
 }
 
 watch(() => props.list, populateList);
-
-const emit = defineEmits<{
-  (e: "dropItem", item: Arrangeable<PayloadType>): void;
-}>();
-
-const hoverOverItem = (hoverIndex: number) => {
+const hoverOverItem = (toIndex: number, mousePosition: RelativePosition) => {
+  console.log('hovering over', toIndex, mousePosition)
   if (dragging.value === undefined) return;
-  if (hoverIndex < 0) return;
-  dragging.value.toIndex = hoverIndex;
+  dragging.value.toIndex = toIndex;
   // if the dragging item does not appear in the list, add it
-  if(!itemsList.value.includes(dragging.value?.payload) ) {
-    dragging.value.toIndex = hoverIndex;
-    keyItemsList.value.splice(hoverIndex, 0, {
+  if(!arrangedItems.value.includes(dragging.value?.payload) ) {
+    keyItemsList.value.splice(toIndex, 0, {
       payload: dragging.value.payload,
       key: dragging.value.key,
     });
   }
   // else move it
   else {
-    const moverIndex = itemsList.value.indexOf(dragging.value?.payload);
+    const moverIndex = arrangedItems.value.indexOf(dragging.value?.payload);
     keyItemsList.value =
-      moverIndex < hoverIndex
+      moverIndex < toIndex
         ? [
             ...keyItemsList.value.slice(0, moverIndex),
-            ...keyItemsList.value.slice(moverIndex + 1, hoverIndex + 1),
+            ...keyItemsList.value.slice(moverIndex + 1, toIndex + 1),
             keyItemsList.value[moverIndex],
-            ...keyItemsList.value.slice(hoverIndex + 1),
+            ...keyItemsList.value.slice(toIndex + 1),
           ]
         : [
-            ...keyItemsList.value.slice(0, hoverIndex),
+            ...keyItemsList.value.slice(0, toIndex),
             keyItemsList.value[moverIndex],
-            ...keyItemsList.value.slice(hoverIndex, moverIndex),
+            ...keyItemsList.value.slice(toIndex, moverIndex),
             ...keyItemsList.value.slice(moverIndex + 1),
           ];
   }
@@ -100,8 +103,8 @@ const pickUpItem = (
     payload: payload,
     origin: props.name,
     destination: props.name,
-    fromIndex: itemsList.value.indexOf(payload),
-    toIndex: itemsList.value.indexOf(payload),
+    fromIndex: arrangedItems.value.indexOf(payload),
+    toIndex: arrangedItems.value.indexOf(payload),
     targets: [props.targets ?? props.group ?? props.name].flat(),
     key,
   }
@@ -111,6 +114,7 @@ const pickUpItem = (
 
 const leaveList = () => {
   if (dragging.value !== undefined) {
+    // TODO: Why does it go clunky again?
     keyItemsList.value = keyItemsList.value.filter(({payload}) => payload !== dragging.value?.payload);
     dragging.value.destination = undefined;
     dragging.value.toIndex = undefined;
@@ -140,7 +144,7 @@ useEventListener(document, "mouseup", () => {
     if(dragging.value.destination) {
       emit("dropItem", toRaw(dragging.value));
     }
-    else if(!itemsList.value.includes(dragging.value.payload)) {
+    else if(!arrangedItems.value.includes(dragging.value.payload)) {
       keyItemsList.value = [
         ...keyItemsList.value.slice(0, dragging.value.fromIndex),
         {
@@ -158,11 +162,13 @@ const beforeKey = Symbol()
 const afterKey = Symbol()
 const hoverElement = ref<HTMLElement>();
 const ArrangeableItems = ref<HTMLElement[]>([]);
+const ArrangeableList = ref<HTMLElement>();
 </script>
 
 <template>
   <HoverItem
-    class="select-none border-4"
+    ref="ArrangeableList"
+    class="border-4"
     @mouse-leave="leaveList"
     @mouse-enter="enterList"
   >
@@ -177,7 +183,7 @@ const ArrangeableItems = ref<HTMLElement[]>([]);
         :key="item.key"
         :class="isDragging(item.payload) ? options.pickedItemClass : options.unpickedItemClass"
         @mousedown.left="pickUpItem($event, item)"
-        @mouse-enter="if (!isDragging(item.payload)) hoverOverItem(index);"
+        @mouse-enter="if (dragging && !isDragging(item.payload)) hoverOverItem(index, $event);"
       >
         <slot :item="item.payload as any" />
       </HoverItem>
