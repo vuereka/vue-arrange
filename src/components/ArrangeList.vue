@@ -17,11 +17,12 @@ type ListType = Array<PayloadType>;
 const props = withDefaults(defineProps<{
   options: ArrangeableOptions;
   list: ListType;
+  name: string | symbol;
+  group?: string | symbol;
+  targets?: string | symbol | Array<string|symbol>;
 }>(), {
   options: () => ({
       key: 'id',
-      draggingClass: '',
-      chosenItemClass: '',
   }),
 })
 
@@ -39,9 +40,6 @@ watch(() => props.list, populateList);
 const emit = defineEmits<{
   (e: "dropItem", item: Arrangeable<PayloadType>): void;
 }>();
-
-const ArrangeableList = ref<HTMLElement>();
-const ArrangeableItemsList = ref<HTMLElement[]>([]);
 
 const hoverOverItem = (hoverIndex: number) => {
   if (dragging.value === undefined) return;
@@ -83,14 +81,9 @@ const pickUpItem = (
   offsetY = $event.offsetY;
   dragging.value = {
     payload: payload,
-    origin: ArrangeableList.value as HTMLElement,
+    origin: props.name,
     fromIndex: arrangedItems.value.indexOf(payload),
-  }
-};
-
-const dropItem = () => {
-  if (dragging.value !== undefined) {
-    emit("dropItem", toRaw(dragging.value));
+    targets: [props.targets ?? props.group ?? props.name].flat(),
   }
 };
 
@@ -105,8 +98,13 @@ const leaveList = () => {
 };
 
 const enterList = () => {
-  if (dragging.value) {
-    dragging.value.destination = ArrangeableList.value;
+  if (dragging.value && (
+    dragging.value.targets.includes(props.name) || (props.group && dragging.value.targets.includes(props.group)))
+    ) {
+    dragging.value.destination = props.name;
+    if(!arrangedItems.value.includes(dragging.value.payload)) {
+      arrangedItems.value.push(dragging.value.payload)
+    }
   }
 };
 
@@ -115,30 +113,43 @@ onMounted(() => {
 });
 
 useEventListener(document, "mouseup", () => {
-  if(dragging.value?.origin === ArrangeableList.value) {
-    dropItem();
+  if(dragging.value && dragging.value.origin === props.name) {
+    if(dragging.value.destination) {
+      emit("dropItem", toRaw(dragging.value));
+    }
+    else if(!arrangedItems.value.includes(dragging.value.payload)) {
+      arrangedItems.value = [
+        ...arrangedItems.value.slice(0, dragging.value.fromIndex),
+        dragging.value.payload,
+        ...arrangedItems.value.slice(dragging.value.fromIndex),
+      ]
+    }
+    dragging.value = undefined;
   }
 });
+
 const beforeKey = Symbol()
 const afterKey = Symbol()
+const hoverElement = ref<HTMLElement>();
+const ArrangeableItems = ref<HTMLElement[]>([]);
 </script>
 
 <template>
   <HoverItem
-    ref="ArrangeableList"
     class="select-none border-4"
     @mouse-leave="leaveList"
     @mouse-enter="enterList"
   >
   <div class="h-20 w-40 border-4 border-red-600"/>
-    <TransitionGroup name="list" ref="ArrangeableItemsList">
+    <TransitionGroup name="list">
       <div :key="beforeKey">
         <slot name="before"/>
       </div>
       <HoverItem
+        ref="ArrangeableItems"
         v-for="item, index in arrangedItems"
         :key="(<any>item)[options.key]"
-        :class="isDragging(item) ? options.pickedItemClass : 'options.unpickedItemClass'"
+        :class="isDragging(item) ? options.pickedItemClass : options.unpickedItemClass"
         @mousedown.left="pickUpItem($event, item)"
         @mouse-enter="if (!isDragging(item)) hoverOverItem(index);"
       >
@@ -150,11 +161,12 @@ const afterKey = Symbol()
     </TransitionGroup>
     <Teleport
       to="body"
-      v-if="dragging && dragging.origin === ArrangeableList"
+      v-if="dragging && dragging.origin === name"
     >
         <div
+          ref="hoverElement"
           :class="options.hoverClass"
-          style="z-index: 1000000; position: absolute"
+          style="z-index: 1000000; position: absolute;"
           :style="{
             left: (mouse.x.value - offsetX ) + 'px',
             top: (mouse.y.value - offsetY ) + 'px',

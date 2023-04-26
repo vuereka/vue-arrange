@@ -11,9 +11,10 @@ watch(mouseDown, (down) => {
 export interface Arrangeable<PayloadType> {
   payload: PayloadType;
   fromIndex: number;
-  origin: HTMLElement;
+  origin: string | symbol;
   toIndex?: number;
-  destination?: HTMLElement;
+  destination?: string | symbol;
+  targets: Array<string|symbol>;
 };
 
 export type ArrangeableType = Arrangeable<any>;

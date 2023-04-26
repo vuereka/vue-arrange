@@ -22,7 +22,7 @@ const doneItems = computed<ItemType[]>(()=>{
   return database.value.filter((item: ItemType)=>item.done);
 })
 
-const addItem = ($event: InputEvent, done: boolean) => {
+const addItem = ($event: InputEvent, done?: boolean) => {
   database.value = [
     ...database.value, 
     {
@@ -34,12 +34,24 @@ const addItem = ($event: InputEvent, done: boolean) => {
   (<HTMLInputElement>$event.target).value = "";
 }
 
-const dropItemTodo = (item: Arrangeable<ItemType>) => {
-  if(item.destination === item.origin) {
-    const moveItem = todoItems.value.splice(item.fromIndex, 1)[0]
-    todoItems.value.splice(item.toIndex, 0, moveItem);
+const dropItem = (item: Arrangeable<ItemType>) => {
+  console.log("dropping Item from done list", item, item.destination)
+  if(item.destination === doneList) {
+    console.log('dropping on done list')
+    database.value[database.value.indexOf(item.payload)].done = true;
+    return;
   }
+  if(item.destination === todoList) {
+    console.log('dropping on todo list')
+    database.value[database.value.indexOf(item.payload)].done = false;
+    return;
+  }
+  database.value = database.value;
 }
+
+const todoList = Symbol();
+const doneList = Symbol();
+const dropzones = Symbol();
 </script>
 
 <template>
@@ -47,7 +59,10 @@ const dropItemTodo = (item: Arrangeable<ItemType>) => {
     <div class="header">To do:</div>
     <ArrangeList 
       :list="todoItems" 
+      :name="todoList"
+      :group="dropzones"
       :options="{ key: 'id', hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass' }" 
+      @drop-item="dropItem"
     >
       <template #default="{ item }">
         <div class="list-item list-item-todo">
@@ -56,7 +71,7 @@ const dropItemTodo = (item: Arrangeable<ItemType>) => {
       </template>
       <template #after>
         <div class="list-item list-item-todo">
-          <input @change="addItem($event, false)" />
+          <input @change="addItem($event)" />
         </div>
       </template>
     </ArrangeList>
@@ -65,8 +80,11 @@ const dropItemTodo = (item: Arrangeable<ItemType>) => {
     <div class="header">Done:</div>
     <ArrangeList 
       :list="doneItems" 
+      :name="doneList"
+      :group="dropzones"
       :options="{ key: 'id', hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass' }" 
       v-slot="{ item }"
+      @drop-item="dropItem"
     >
       <div class="list-item list-item-done">
         {{ item.cap }}
