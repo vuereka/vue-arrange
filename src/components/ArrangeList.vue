@@ -126,13 +126,12 @@ const pickUpItem = ($event: MouseEvent, { key, payload }: KeyItem) => {
 
 const leaveList = () => {
   if (dragging.value !== undefined) {
-    // TODO: Why does it go clunky again?
-    keyItemsList.value.splice(
-      keyItemsList.value.findIndex(
-        ({ payload }: KeyItem) => payload === dragging.value?.payload
-      ),
-      1
-    );
+    // N.b. if the v-for list inside the transitiongroup has a ref with a ref() constant in the setup function,
+    // leaving the list will go clunky. https://github.com/vuejs/core/issues/8173
+    const itemIndex = arrangedItems.value.indexOf(dragging.value.payload);
+    if (itemIndex >= 0) {
+      keyItemsList.value.splice(itemIndex, 1);
+    }
     dragging.value.destination = undefined;
     dragging.value.toIndex = undefined;
   }
