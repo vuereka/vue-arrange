@@ -156,7 +156,6 @@ useEventListener(document, "mouseup", () => {
 const beforeKey = Symbol()
 const afterKey = Symbol()
 const hoverElement = ref<HTMLElement>();
-const ArrangeableItems = ref<HTMLElement[]>([]);
 const ArrangeableList = ref<HTMLElement>();
 </script>
 
@@ -173,7 +172,6 @@ const ArrangeableList = ref<HTMLElement>();
         <slot name="before"/>
       </div>
       <HoverItem
-        ref="ArrangeableItems"
         v-for="item, index in keyItemsList"
         :key="item.key"
         :class="isDragging(item.payload) ? options.pickedItemClass : options.unpickedItemClass"
