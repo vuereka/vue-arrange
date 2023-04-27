@@ -1,3 +1,7 @@
+.arrangeable {
+  cursor: grab;
+}
+
 .hoverClass {
   opacity: 0.7;
   cursor: grabbing;
@@ -8,5 +12,62 @@
 }
 
 .pickedItemClass {
+  visibility: hidden;
+}
+
+.list {
+  width: 224px;
+  height: fit-content;
+  float: left;
+  margin: 4px;
+  border-radius: 6px;
+  border-width: 2px;
+  border-color: black;
+  border-style: groove;
+  text-align: left;
+}
+
+.header {
+  padding: 8px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  width: 200px;
+  height: 40px;
+  margin: 2px;
+  padding: 8px;
+  font-size: 20px;
+  border-radius: 4px;
+  border-width: 2px;
+  border-color: black;
+  border-style: groove;
+}
+
+.list-item-todo {
+  background-color: aquamarine;
+}
+
+input {
+  width: 100%;
+  font-size: 18px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid black;
+}
+
+.list-item-done {
+  background-color: lavender;
+}
+
+.drop-zone {
+  border-style: dashed;
+}
+
+.invisible {
   visibility: hidden;
 }
