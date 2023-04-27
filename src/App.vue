@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import ArrangeList from './components/ArrangeList.vue';
-import { type Arrangeable, useDragging } from './components/useDragging';
+import { computed, ref } from "vue";
+import ArrangeList from "./components/ArrangeList.vue";
+import { type Arrangeable, useDragging } from "./components/useDragging";
 
-type ItemType = { order: number; cap: string, done?: boolean }
+type ItemType = { order: number; cap: string; done?: boolean };
 
 const database = ref<ItemType[]>([
   { order: 0, cap: "Build app" },
@@ -20,12 +20,16 @@ const DoneList = ref<typeof ArrangeList>();
 const { dragging } = useDragging();
 
 const todoItems = computed<ItemType[]>(() => {
-  return database.value.filter((item: ItemType) => !item.done).sort((a, b) => a.order - b.order);
-})
+  return database.value
+    .filter((item: ItemType) => !item.done)
+    .sort((a, b) => a.order - b.order);
+});
 
 const doneItems = computed<ItemType[]>(() => {
-  return database.value.filter((item: ItemType) => item.done).sort((a, b) => a.order - b.order);
-})
+  return database.value
+    .filter((item: ItemType) => item.done)
+    .sort((a, b) => a.order - b.order);
+});
 
 const addItem = ($event: InputEvent, done?: boolean) => {
   database.value = [
@@ -37,65 +41,89 @@ const addItem = ($event: InputEvent, done?: boolean) => {
     },
   ];
   (<HTMLInputElement>$event.target).value = "";
-}
+};
 
 const dropItem = (dropItem: Arrangeable<ItemType>) => {
-  if(!dropItem.destination) return;
+  if (!dropItem.destination) return;
   const targetList = dropItem.destination === doneList ? DoneList : TodoList;
   const done = dropItem.destination === doneList ? true : false;
   if (dropItem.toIndex !== undefined) {
     targetList.value?.arrangedItems.forEach((item: ItemType, index: number) => {
       database.value[database.value.indexOf(item)].order = index;
       database.value[database.value.indexOf(item)].done = done;
-    })
-  }
-  else {
+    });
+  } else {
     database.value[database.value.indexOf(dropItem.payload)].order = 100;
     database.value[database.value.indexOf(dropItem.payload)].done = done;
   }
-}
+};
 
-const todoList = Symbol('Todo list');
-const doneList = Symbol('Done list');
-const dropzones = Symbol('Drop zones');
+const todoList = Symbol("Todo list");
+const doneList = Symbol("Done list");
+const dropzones = Symbol("Drop zones");
 </script>
 
 <template>
   <div class="list">
     <div class="header">To do:</div>
-    <ArrangeList ref="TodoList" :list="todoItems" :name="todoList" :group="dropzones"
-      :options="{ hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass', unpickedItemClass: 'arrangeable' }" 
+    <ArrangeList
+      ref="TodoList"
+      :list="todoItems"
+      :name="todoList"
+      :group="dropzones"
+      :options="{
+        hoverClass: 'hoverClass',
+        pickedItemClass: 'pickedItemClass',
+        unpickedItemClass: 'arrangeable',
+      }"
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="list-item list-item-todo">
+        <div class="list-item-todo list-item">
           {{ item.cap }}
         </div>
       </template>
       <template #before>
-        <div v-if="TodoList?.arrangedItems.length === 0 && dragging" class="list-item list-item-todo drop-zone"/>
+        <div
+          v-if="TodoList?.arrangedItems.length === 0 && dragging"
+          class="list-item-todo drop-zone list-item"
+        />
       </template>
       <template #after>
-        <div class="list-item list-item-todo">
-          <input @change="addItem($event as InputEvent)" placeholder="New item"/>
+        <div class="list-item-todo list-item">
+          <input
+            @change="addItem($event as InputEvent)"
+            placeholder="New item"
+          />
         </div>
       </template>
     </ArrangeList>
   </div>
   <div class="list">
     <div class="header">Done:</div>
-    <ArrangeList ref="DoneList" :list="doneItems" :name="doneList" :group="dropzones"
-      :options="{ hoverClass: 'hoverClass', pickedItemClass: 'pickedItemClass', unpickedItemClass: 'arrangeable' }" 
+    <ArrangeList
+      ref="DoneList"
+      :list="doneItems"
+      :name="doneList"
+      :group="dropzones"
+      :options="{
+        hoverClass: 'hoverClass',
+        pickedItemClass: 'pickedItemClass',
+        unpickedItemClass: 'arrangeable',
+      }"
       @drop-item="dropItem"
     >
-        <template #default="{ item }" >
-          <div class="list-item list-item-done">
-            {{ item.cap }}
-          </div>
-        </template>
-        <template #before>
-          <div v-if="DoneList?.arrangedItems.length === 0 && dragging" class="list-item list-item-done drop-zone"/>
-        </template>
+      <template #default="{ item }">
+        <div class="list-item-done list-item">
+          {{ item.cap }}
+        </div>
+      </template>
+      <template #before>
+        <div
+          v-if="DoneList?.arrangedItems.length === 0 && dragging"
+          class="list-item-done drop-zone list-item"
+        />
+      </template>
     </ArrangeList>
   </div>
 </template>

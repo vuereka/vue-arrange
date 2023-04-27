@@ -14,9 +14,9 @@ export interface Arrangeable<PayloadType> {
   origin: string | symbol;
   toIndex?: number;
   destination?: string | symbol;
-  targets: Array<string|symbol>;
+  targets: Array<string | symbol>;
   key: symbol;
-};
+}
 
 export type ArrangeableType = Arrangeable<any>;
 
@@ -25,9 +25,7 @@ const dragging = ref<ArrangeableType | undefined>(undefined);
 export const useDragging = <T>() => {
   function isDragging(item: T) {
     if (dragging.value === undefined) return false;
-    return (
-      item === dragging.value?.payload
-    );
+    return item === dragging.value?.payload;
   }
 
   return {
