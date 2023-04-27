@@ -6,10 +6,11 @@ import { type Arrangeable, useDragging } from './components/useDragging';
 type ItemType = { order: number; cap: string, done?: boolean }
 
 const database = ref<ItemType[]>([
-  { order: 0, cap: "Fix this code" },
-  { order: 1, cap: "Deploy to production" },
-  { order: 2, cap: "Be awesome" },
-  { order: 3, cap: "Relax" },
+  { order: 0, cap: "Build app" },
+  { order: 1, cap: "Debug the code" },
+  { order: 2, cap: "Commit and push to github" },
+  { order: 3, cap: "Deploy to production" },
+  { order: 4, cap: "Be awesome" },
   { order: 0, cap: "Set up Vue project", done: true },
 ]);
 let id = database.value.length + 1;
@@ -38,20 +39,25 @@ const addItem = ($event: InputEvent, done?: boolean) => {
   (<HTMLInputElement>$event.target).value = "";
 }
 
-const dropItem = (item: Arrangeable<ItemType>) => {
-  if (item.toIndex !== undefined) {
-    const targetList = item.destination === doneList ? DoneList : TodoList;
-    const done = item.destination === doneList ? true : false;
+const dropItem = (dropItem: Arrangeable<ItemType>) => {
+  if(!dropItem.destination) return;
+  const targetList = dropItem.destination === doneList ? DoneList : TodoList;
+  const done = dropItem.destination === doneList ? true : false;
+  if (dropItem.toIndex !== undefined) {
     targetList.value?.arrangedItems.forEach((item: ItemType, index: number) => {
       database.value[database.value.indexOf(item)].order = index;
       database.value[database.value.indexOf(item)].done = done;
     })
   }
+  else {
+    database.value[database.value.indexOf(dropItem.payload)].order = 100;
+    database.value[database.value.indexOf(dropItem.payload)].done = done;
+  }
 }
 
-const todoList = Symbol();
-const doneList = Symbol();
-const dropzones = Symbol();
+const todoList = Symbol('Todo list');
+const doneList = Symbol('Done list');
+const dropzones = Symbol('Drop zones');
 </script>
 
 <template>

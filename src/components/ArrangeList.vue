@@ -18,13 +18,14 @@ type KeyItem = {
 }
 
 const props = withDefaults(defineProps<{
-  options: ArrangeableOptions;
+  options?: ArrangeableOptions;
   list: ListType;
-  name: string | symbol;
+  name?: string | symbol;
   group?: string | symbol;
   targets?: string | symbol | Array<string|symbol>;
 }>(), {
   options: () => ({
+    name: Symbol(),
     hoverClass: "",
     pickedItemClass: "",
     unpickedItemClass: "",
@@ -60,9 +61,9 @@ function populateList(newList: PayloadType[]) {
 }
 
 watch(() => props.list, populateList);
-const hoverOverItem = (toIndex: number, mousePosition: RelativePosition) => {
-  console.log('hovering over', toIndex, mousePosition)
-  if (dragging.value === undefined) return;
+const hoverOverItem = (payload: PayloadType, toIndex: number) => {
+  if (dragging.value === undefined 
+    || dragging.value.destination !== props.name || isDragging(payload) ) return;
   dragging.value.toIndex = toIndex;
   // if the dragging item does not appear in the list, add it
   if(!arrangedItems.value.includes(dragging.value?.payload) ) {
@@ -73,7 +74,7 @@ const hoverOverItem = (toIndex: number, mousePosition: RelativePosition) => {
   }
   // else move it
   else {
-    const moverIndex = arrangedItems.value.indexOf(dragging.value?.payload);
+    const moverIndex = keyItemsList.value.findIndex(({payload}) => payload === dragging.value?.payload);
     keyItemsList.value =
       moverIndex < toIndex
         ? [
@@ -115,7 +116,7 @@ const pickUpItem = (
 const leaveList = () => {
   if (dragging.value !== undefined) {
     // TODO: Why does it go clunky again?
-    keyItemsList.value = keyItemsList.value.filter(({payload}) => payload !== dragging.value?.payload);
+    keyItemsList.value.splice(keyItemsList.value.findIndex(({payload}: KeyItem)=>payload === dragging.value?.payload), 1)
     dragging.value.destination = undefined;
     dragging.value.toIndex = undefined;
   }
@@ -126,12 +127,6 @@ const enterList = () => {
     dragging.value.targets.includes(props.name) || (props.group && dragging.value.targets.includes(props.group)))
     ) {
     dragging.value.destination = props.name;
-    if(!keyItemsList.value.includes(dragging.value.payload)) {
-      keyItemsList.value.push({
-        payload: dragging.value.payload,
-        key: dragging.value.key,
-      })
-    }
   }
 };
 
@@ -183,7 +178,7 @@ const ArrangeableList = ref<HTMLElement>();
         :key="item.key"
         :class="isDragging(item.payload) ? options.pickedItemClass : options.unpickedItemClass"
         @mousedown.left="pickUpItem($event, item)"
-        @mouse-enter="if (dragging && !isDragging(item.payload)) hoverOverItem(index, $event);"
+        @mouse-enter="hoverOverItem(item.payload, index);"
       >
         <slot :item="item.payload as any" />
       </HoverItem>
