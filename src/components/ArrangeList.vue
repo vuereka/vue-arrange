@@ -2,7 +2,7 @@
 import { useMouse, useEventListener } from "@vueuse/core";
 import { ref, toRaw, onMounted, watch, computed } from "vue";
 import { useDragging, type Arrangeable } from "./useDragging";
-import HoverItem, { type RelativePosition } from "./HoverItem.vue";
+import HoverItem from "./HoverItem.vue";
 
 // TODO: any way we can use a generic in stead of unknown here? Would be great to assure it at least contains the key in the options.
 interface ArrangeableOptions {
@@ -108,9 +108,21 @@ const hoverOverItem = (payload: PayloadType, toIndex: number) => {
 
 let offsetX: number = 0;
 let offsetY: number = 0;
-const pickUpItem = ($event: MouseEvent, { key, payload }: KeyItem) => {
-  offsetX = $event.offsetX;
-  offsetY = $event.offsetY;
+const pickUpItem = (
+  $event: MouseEvent | TouchEvent, 
+  { key, payload }: KeyItem
+) => {
+  // Weird behavior in Firefox; not allowed to say $event instanceof TouchEvent. 
+  if ($event.targetTouches !== undefined) {
+    if ($event.targetTouches.length > 1) return;
+    const box = (<HTMLElement>$event.target).getBoundingClientRect()
+    offsetX = $event.targetTouches[0].clientX - box.x;
+    offsetY = $event.targetTouches[0].clientY - box.y;
+  }
+  else {
+    offsetX = $event.offsetX;
+    offsetY = $event.offsetY;
+  }
   dragging.value = {
     payload: payload,
     origin: props.name,
@@ -151,21 +163,34 @@ onMounted(() => {
   populateList(props.list);
 });
 
-useEventListener(document, "mouseup", () => {
+const documentOverscrollBehavior = document.body.style.overscrollBehavior;
+
+const dropItem = () => {
   if (dragging.value && dragging.value.origin === props.name) {
     if (dragging.value.destination) {
       emit("dropItem", toRaw(dragging.value));
-    } else if (!arrangedItems.value.includes(dragging.value.payload)) {
-      keyItemsList.value = [
-        ...keyItemsList.value.slice(0, dragging.value.fromIndex),
-        {
+    } 
+    // when dropped outside of dropzones
+    else if (!arrangedItems.value.includes(dragging.value.payload)) {
+      keyItemsList.value.splice(dragging.value.fromIndex, 0, {
           payload: dragging.value.payload,
           key: dragging.value.key,
-        },
-        ...keyItemsList.value.slice(dragging.value.fromIndex),
-      ];
+        }
+      );
     }
     dragging.value = undefined;
+  }
+  // Reset document body overscroll behavior for touch screens:
+  document.body.style.overscrollBehavior = documentOverscrollBehavior;
+};
+
+useEventListener(document, "mouseup", dropItem);
+useEventListener(document, "touchend", dropItem);
+useEventListener(document, "touchcancel", dropItem);
+// TODO: bug in chrome/brave; when the transitiongroup animation ends, mouse(x,y) touch tracking stops
+useEventListener(document, "touchmove", () => {
+  if(dragging.value) {
+    document.body.style.overscrollBehavior = 'none';
   }
 });
 
@@ -195,6 +220,7 @@ const ArrangeableList = ref<HTMLElement>();
             ? options.pickedItemClass
             : options.unpickedItemClass
         "
+        @touchstart.passive="pickUpItem($event, item)"
         @mousedown.left="pickUpItem($event, item)"
         @mouse-enter="hoverOverItem(item.payload, index)"
       >
