@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useMouse, useEventListener } from "@vueuse/core";
+import { usePointer, useEventListener } from "@vueuse/core";
 import { ref, toRaw, onMounted, watch, computed } from "vue";
 import { useDragging, type Arrangeable } from "./useDragging";
-import HoverItem from "./HoverItem.vue";
+import PointerElement from "./PointerElement.vue";
 
 // TODO: any way we can use a generic in stead of unknown here? Would be great to assure it at least contains the key in the options.
 interface ArrangeableOptions {
@@ -39,7 +39,6 @@ const emit = defineEmits<{
   (e: "dropItem", item: Arrangeable<PayloadType>): void;
 }>();
 
-const mouse = useMouse();
 const { dragging, isDragging } = useDragging<PayloadType>();
 const keyItemsList = ref<KeyItem[]>([]);
 const arrangedItems = computed(() =>
@@ -52,16 +51,17 @@ defineExpose({
 });
 
 function populateList(data: PayloadType[]) {
-  const newList : KeyItem[] = []
+  const newList: KeyItem[] = [];
   // Make sure to preserve the keys associated with the objects:
-  data.forEach(item => {
-    const keyItem = keyItemsList.value.find(({payload}) => item === payload);
-    if(keyItem) newList.push(keyItem)
-    else newList.push({
-      key: Symbol(),
-      payload: item,
-    })
-  }) 
+  data.forEach((item) => {
+    const keyItem = keyItemsList.value.find(({ payload }) => item === payload);
+    if (keyItem) newList.push(keyItem);
+    else
+      newList.push({
+        key: Symbol(),
+        payload: item,
+      });
+  });
   keyItemsList.value = newList;
 }
 
@@ -105,21 +105,9 @@ const hoverOverItem = (payload: PayloadType, toIndex: number) => {
 
 let offsetX: number = 0;
 let offsetY: number = 0;
-const pickUpItem = (
-  $event: MouseEvent | TouchEvent, 
-  { key, payload }: KeyItem
-) => {
-  // Weird behavior in Firefox; not allowed to say $event instanceof TouchEvent. 
-  if ($event.targetTouches !== undefined) {
-    if ($event.targetTouches.length > 1) return;
-    const box = (<HTMLElement>$event.target).getBoundingClientRect()
-    offsetX = $event.targetTouches[0].clientX - box.x;
-    offsetY = $event.targetTouches[0].clientY - box.y;
-  }
-  else {
-    offsetX = $event.offsetX;
-    offsetY = $event.offsetY;
-  }
+const pickUpItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
+  offsetX = $event.offsetX;
+  offsetY = $event.offsetY;
   dragging.value = {
     payload: payload,
     origin: props.name,
@@ -156,54 +144,49 @@ const enterList = () => {
   }
 };
 
-onMounted(() => {
-  populateList(props.list);
-});
-
 const documentOverscrollBehavior = document.body.style.overscrollBehavior;
 
 /**
  * dropItem happens when an element from this ArrangedList is dropped.
  */
 const dropItem = () => {
-  if (dragging.value === undefined || dragging.value.origin !== props.name)return; 
+  if (dragging.value === undefined || dragging.value.origin !== props.name)
+    return;
   emit("dropItem", toRaw(dragging.value));
-  populateList(props.list)
+  populateList(props.list);
   dragging.value = undefined;
 
   // Reset document body overscroll behavior for touch screens:
   document.body.style.overscrollBehavior = documentOverscrollBehavior;
 };
 
-useEventListener(document, "mouseup", dropItem);
+const pointer = usePointer();
+useEventListener(document, "pointerup", dropItem);
 useEventListener(document, "touchend", dropItem);
 useEventListener(document, "touchcancel", dropItem);
-// TODO: bug in chrome/brave; when the transitiongroup animation ends, mouse(x,y) touch tracking stops
-useEventListener(document, "touchmove", () => {
-  if(dragging.value) {
-    document.body.style.overscrollBehavior = 'none';
-  }
-});
 
+// useEventListener(document, 'drag', event => console.log(Math.random(), event))
 const beforeKey = Symbol();
 const afterKey = Symbol();
 const hoverElement = ref<HTMLElement>();
 const ArrangeableList = ref<HTMLElement>();
+onMounted(() => {
+  populateList(props.list);
+  document.body.style.touchAction = "none";
+});
 </script>
 
 <template>
-  <HoverItem
+  <PointerElement
     ref="ArrangeableList"
-    class="border-4"
-    @mouse-leave="leaveList"
-    @mouse-enter="enterList"
+    @pointer-leave="leaveList"
+    @pointer-enter="enterList"
   >
-    <div class="h-20 w-40 border-4 border-red-600" />
     <TransitionGroup name="list">
       <div :key="beforeKey">
         <slot name="before" />
       </div>
-      <HoverItem
+      <PointerElement
         v-for="(item, index) in keyItemsList"
         :key="item.key"
         :class="
@@ -211,12 +194,11 @@ const ArrangeableList = ref<HTMLElement>();
             ? options.pickedItemClass
             : options.unpickedItemClass
         "
-        @touchstart.passive="pickUpItem($event, item)"
-        @mousedown.left="pickUpItem($event, item)"
-        @mouse-enter="hoverOverItem(item.payload, index)"
+        @pointerdown="pickUpItem($event, item)"
+        @pointer-enter="hoverOverItem(item.payload, index)"
       >
         <slot :item="item.payload as any" />
-      </HoverItem>
+      </PointerElement>
       <div :key="afterKey">
         <slot name="after" />
       </div>
@@ -227,14 +209,14 @@ const ArrangeableList = ref<HTMLElement>();
         :class="options.hoverClass"
         style="z-index: 1000000; position: absolute"
         :style="{
-          left: mouse.x.value - offsetX + 'px',
-          top: mouse.y.value - offsetY + 'px',
+          left: pointer.x.value - offsetX + 'px',
+          top: pointer.y.value - offsetY + 'px',
         }"
       >
         <slot :item="dragging.payload as any" :dragging="true" />
       </div>
     </Teleport>
-  </HoverItem>
+  </PointerElement>
 </template>
 
 <style scoped>

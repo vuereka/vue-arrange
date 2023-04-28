@@ -82,7 +82,7 @@ const dropzones = Symbol("Drop zones");
     >
       <template #default="{ item }">
         <div class="list-item-todo list-item">
-          {{ item.order }} {{ item.cap }}
+          {{ item.cap }}
         </div>
       </template>
       <template #before>
