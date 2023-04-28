@@ -77,6 +77,7 @@ const dropzones = Symbol("Drop zones");
         hoverClass: 'hoverClass',
         pickedItemClass: 'pickedItemClass',
         unpickedItemClass: 'arrangeable',
+        transitionName: 'customTransition',
       }"
       @drop-item="dropItem"
     >

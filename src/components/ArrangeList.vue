@@ -4,12 +4,14 @@ import { ref, toRaw, onMounted, watch, computed } from "vue";
 import { useDragging, type Arrangeable } from "./useDragging";
 import PointerElement from "./PointerElement.vue";
 
-// TODO: any way we can use a generic in stead of unknown here? Would be great to assure it at least contains the key in the options.
 interface ArrangeableOptions {
   hoverClass?: string;
   pickedItemClass?: string;
   unpickedItemClass?: string;
+  transitionName?: string;
 }
+
+// TODO: any way we can use a generic in stead of object here? 
 type PayloadType = object;
 type ListType = Array<PayloadType>;
 type KeyItem = {
@@ -31,6 +33,7 @@ const props = withDefaults(
       hoverClass: "",
       pickedItemClass: "",
       unpickedItemClass: "",
+      transitionName: "",
     }),
   }
 );
@@ -145,8 +148,6 @@ const enterList = () => {
   }
 };
 
-const documentOverscrollBehavior = document.body.style.overscrollBehavior;
-
 /**
  * dropItem happens when an element from this ArrangedList is dropped.
  */
@@ -156,15 +157,11 @@ const dropItem = () => {
   emit("dropItem", toRaw(dragging.value));
   populateList(props.list);
   dragging.value = undefined;
-
-  // Reset document body overscroll behavior for touch screens:
-  document.body.style.overscrollBehavior = documentOverscrollBehavior;
 };
 
 const pointer = usePointer();
 useEventListener(document, "pointerup", dropItem);
 
-// useEventListener(document, 'drag', event => console.log(Math.random(), event))
 const beforeKey = Symbol();
 const afterKey = Symbol();
 const hoverElement = ref<HTMLElement>();
@@ -181,7 +178,7 @@ onMounted(() => {
     @pointer-leave="leaveList"
     @pointer-enter="enterList"
   >
-    <TransitionGroup name="list">
+    <TransitionGroup :name="options.transitionName">
       <div :key="beforeKey">
         <slot name="before" />
       </div>
@@ -219,20 +216,20 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.list-move, /* apply transition to moving elements */
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
+.v-move, 
+.v-enter-active,
+.v-leave-active {
+  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
 }
 
-.list-enter-from,
-.list-leave-to {
+.v-enter-from,
+.v-leave-to {
   opacity: 0;
 }
 
 /* ensure leaving items are taken out of layout flow so that moving
    animations can be calculated correctly. */
-.list-leave-active {
+.v-leave-active {
   position: absolute;
 }
 </style>
