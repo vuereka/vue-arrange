@@ -70,6 +70,7 @@ function populateList(data: PayloadType[]) {
 
 watch(() => props.list, populateList);
 const hoverOverItem = (payload: PayloadType, toIndex: number) => {
+  enterList();
   if (
     dragging.value === undefined ||
     dragging.value.destination !== props.name ||
