@@ -51,21 +51,18 @@ defineExpose({
   dragging,
 });
 
-function populateList(newList: PayloadType[]) {
-  dragging.value = undefined;
-  const newArrangedList = keyItemsList.value.filter(({ payload }) =>
-    newList.includes(payload)
-  );
-  const newItems = newList.filter(
-    (item) => !newArrangedList.find(({ payload }) => payload === item)
-  );
-  for (const item of newItems) {
-    newArrangedList.push({
+function populateList(data: PayloadType[]) {
+  const newList : KeyItem[] = []
+  // Make sure to preserve the keys associated with the objects:
+  data.forEach(item => {
+    const keyItem = keyItemsList.value.find(({payload}) => item === payload);
+    if(keyItem) newList.push(keyItem)
+    else newList.push({
       key: Symbol(),
       payload: item,
-    });
-  }
-  keyItemsList.value = newArrangedList;
+    })
+  }) 
+  keyItemsList.value = newList;
 }
 
 watch(() => props.list, populateList);
@@ -165,21 +162,15 @@ onMounted(() => {
 
 const documentOverscrollBehavior = document.body.style.overscrollBehavior;
 
+/**
+ * dropItem happens when an element from this ArrangedList is dropped.
+ */
 const dropItem = () => {
-  if (dragging.value && dragging.value.origin === props.name) {
-    if (dragging.value.destination) {
-      emit("dropItem", toRaw(dragging.value));
-    } 
-    // when dropped outside of dropzones
-    else if (!arrangedItems.value.includes(dragging.value.payload)) {
-      keyItemsList.value.splice(dragging.value.fromIndex, 0, {
-          payload: dragging.value.payload,
-          key: dragging.value.key,
-        }
-      );
-    }
-    dragging.value = undefined;
-  }
+  if (dragging.value === undefined || dragging.value.origin !== props.name)return; 
+  emit("dropItem", toRaw(dragging.value));
+  populateList(props.list)
+  dragging.value = undefined;
+
   // Reset document body overscroll behavior for touch screens:
   document.body.style.overscrollBehavior = documentOverscrollBehavior;
 };

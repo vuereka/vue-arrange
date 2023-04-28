@@ -44,7 +44,9 @@ const addItem = ($event: InputEvent, done?: boolean) => {
 };
 
 const dropItem = (dropItem: Arrangeable<ItemType>) => {
-  if (!dropItem.destination) return;
+  if (!dropItem.destination) {
+    return;
+  }
   const targetList = dropItem.destination === doneList ? DoneList : TodoList;
   const done = dropItem.destination === doneList ? true : false;
   if (dropItem.toIndex !== undefined) {
@@ -53,7 +55,7 @@ const dropItem = (dropItem: Arrangeable<ItemType>) => {
       database.value[database.value.indexOf(item)].done = done;
     });
   } else {
-    database.value[database.value.indexOf(dropItem.payload)].order = 100;
+    database.value[database.value.indexOf(dropItem.payload)].order = 1;
     database.value[database.value.indexOf(dropItem.payload)].done = done;
   }
 };
@@ -80,7 +82,7 @@ const dropzones = Symbol("Drop zones");
     >
       <template #default="{ item }">
         <div class="list-item-todo list-item">
-          {{ item.cap }}
+          {{ item.order }} {{ item.cap }}
         </div>
       </template>
       <template #before>

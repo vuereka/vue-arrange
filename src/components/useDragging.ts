@@ -1,12 +1,4 @@
-import { useMousePressed } from "@vueuse/core";
-import { watch, ref } from "vue";
-
-const { pressed: mouseDown } = useMousePressed();
-watch(mouseDown, (down) => {
-  if (!down) {
-    dragging.value = undefined;
-  }
-});
+import { ref } from "vue";
 
 export interface Arrangeable<PayloadType> {
   payload: PayloadType;
