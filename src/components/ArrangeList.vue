@@ -106,6 +106,7 @@ const hoverOverItem = (payload: PayloadType, toIndex: number) => {
 let offsetX: number = 0;
 let offsetY: number = 0;
 const pickUpItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
+  $event.preventDefault();
   offsetX = $event.offsetX;
   offsetY = $event.offsetY;
   dragging.value = {
@@ -162,8 +163,6 @@ const dropItem = () => {
 
 const pointer = usePointer();
 useEventListener(document, "pointerup", dropItem);
-useEventListener(document, "touchend", dropItem);
-useEventListener(document, "touchcancel", dropItem);
 
 // useEventListener(document, 'drag', event => console.log(Math.random(), event))
 const beforeKey = Symbol();
