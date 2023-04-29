@@ -1,0 +1,90 @@
+.arrangeable {
+  cursor: grab;
+}
+
+.hoverClass {
+  opacity: 0.7;
+  cursor: grabbing;
+}
+
+.unpickedItemClass {
+  cursor: grab;
+}
+
+.pickedItemClass {
+  visibility: hidden;
+}
+
+/* 
+  See Vue documentation on how to use css-based transitions: 
+  https://vuejs.org/guide/built-ins/transition.html#css-based-transitions
+*/
+.customTransition-move, 
+.customTransition-enter-active,
+.customTransition-leave-active {
+  transition: all 0.3s ease;
+}
+.customTransition-enter-from,
+.customTransition-leave-to {
+  opacity: 0;
+}
+.customTransition-leave-active {
+  position: absolute;
+}
+
+.list {
+  width: 224px;
+  height: fit-content;
+  float: left;
+  margin: 4px;
+  border-radius: 6px;
+  border-width: 2px;
+  border-color: black;
+  border-style: groove;
+  text-align: left;
+}
+
+.header {
+  padding: 8px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  width: 200px;
+  height: 40px;
+  margin: 2px;
+  padding: 8px;
+  font-size: 20px;
+  border-radius: 4px;
+  border-width: 2px;
+  border-color: black;
+  border-style: groove;
+}
+
+.list-item-todo {
+  background-color: aquamarine;
+}
+
+.list-item-done {
+  background-color: lavender;
+}
+
+input {
+  width: 100%;
+  font-size: 18px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid black;
+}
+
+.drop-zone {
+  border-style: dashed;
+}
+
+.invisible {
+  visibility: hidden;
+}
