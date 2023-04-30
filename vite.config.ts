@@ -6,7 +6,7 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/components/index.ts"),
+      entry: path.resolve(__dirname, "src/index.ts"),
       name: "vue-arrange",
       fileName: (format) => `vue-arrange.${format}.js`,
     },

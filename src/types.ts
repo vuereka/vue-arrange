@@ -1,4 +1,4 @@
-export interface iArrangeable<PayloadType> {
+export type MovingItem<PayloadType> = {
   payload: PayloadType;
   fromIndex: number;
   origin: string | symbol;
@@ -7,5 +7,3 @@ export interface iArrangeable<PayloadType> {
   targets: Array<string | symbol>;
   key: symbol;
 }
-
-export type DraggingType = iArrangeable<any>;

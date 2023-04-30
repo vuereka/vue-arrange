@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { Arrangeable } from "vue-arrange";
-import { DraggingType } from "vue-arrange/dist/index";
+import { ArrangeableList, type MovingItem } from "../src";
 
 type ItemType = { order: number; cap: string; done?: boolean };
 
@@ -39,7 +38,7 @@ const addItem = ($event: InputEvent, done?: boolean) => {
   (<HTMLInputElement>$event.target).value = "";
 };
 
-const dropItem = (dropItem: DraggingType) => {
+const dropItem = (dropItem: MovingItem<ItemType>) => {
   if (!dropItem.destination) {
     return;
   }
@@ -55,8 +54,8 @@ const dropItem = (dropItem: DraggingType) => {
   }
 };
 
-const TodoList = ref<typeof Arrangeable>();
-const DoneList = ref<typeof Arrangeable>();
+const TodoList = ref<typeof ArrangeableList>();
+const DoneList = ref<typeof ArrangeableList>();
 
 const todoList = Symbol("Todo list");
 const doneList = Symbol("Done list");
@@ -66,7 +65,7 @@ const dropzones = Symbol("Drop zones");
 <template>
   <div class="list">
     <div class="header">To do:</div>
-    <Arrangeable
+    <ArrangeableList
       ref="TodoList"
       :list="todoItems"
       :name="todoList"
@@ -98,11 +97,11 @@ const dropzones = Symbol("Drop zones");
           />
         </div>
       </template>
-    </Arrangeable>
+    </ArrangeableList>
   </div>
   <div class="list">
     <div class="header">Done:</div>
-    <Arrangeable
+    <ArrangeableList
       ref="DoneList"
       :list="doneItems"
       :name="doneList"
@@ -125,6 +124,6 @@ const dropzones = Symbol("Drop zones");
           class="list-item-done drop-zone list-item"
         />
       </template>
-    </Arrangeable>
+    </ArrangeableList>
   </div>
 </template>
