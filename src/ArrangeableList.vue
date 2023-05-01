@@ -226,22 +226,3 @@ onMounted(() => {
     </Teleport>
   </PointerElement>
 </template>
-
-<style scoped>
-.v-move,
-.v-enter-active,
-.v-leave-active {
-  transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
-}
-
-/* ensure leaving items are taken out of layout flow so that moving
-   animations can be calculated correctly. */
-.v-leave-active {
-  position: absolute;
-}
-</style>

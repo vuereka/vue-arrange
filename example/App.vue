@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ArrangeableList, useMovingItem, type MovingItem } from "../src";
+import { ArrangeableList, useMovingItem, type MovingItem } from "vue-arrange";
 
 type ItemType = { order: number; cap: string; done?: boolean };
 const { movingItem } = useMovingItem<ItemType>();
@@ -70,7 +70,7 @@ const dropzones = Symbol("Drop zones");
         hoverClass: 'hoverClass',
         pickedItemClass: 'pickedItemClass',
         unpickedItemClass: 'arrangeable',
-        transitionName: 'customTransition',
+        transitionName: 'transition',
       }"
       @drop-item="dropItem"
     >
@@ -105,6 +105,7 @@ const dropzones = Symbol("Drop zones");
         hoverClass: 'hoverClass',
         pickedItemClass: 'pickedItemClass',
         unpickedItemClass: 'arrangeable',
+        transitionName: 'transition',
       }"
       @drop-item="dropItem"
     >

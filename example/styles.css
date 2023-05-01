@@ -19,16 +19,16 @@
   See Vue documentation on how to use css-based transitions: 
   https://vuejs.org/guide/built-ins/transition.html#css-based-transitions
 */
-.customTransition-move, 
-.customTransition-enter-active,
-.customTransition-leave-active {
+.transition-move, 
+.transition-enter-active,
+.transition-leave-active {
   transition: all 0.3s ease;
 }
-.customTransition-enter-from,
-.customTransition-leave-to {
+.transition-enter-from,
+.transition-leave-to {
   opacity: 0;
 }
-.customTransition-leave-active {
+.transition-leave-active {
   position: absolute;
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "vue-arrange",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "files": ["dist"],
   "main": "./dist/vue-arrange.umd.cjs",
@@ -23,7 +23,7 @@
     "vue": "^3.2.47",
     "@vueuse/core": "^9.13.0",
     "@vueuse/components": "^9.13.0",
-    "vue-arrange": "vue-arrange-0.1.1.tgz"
+    "vue-arrange": "vue-arrange-0.1.2.tgz"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",
