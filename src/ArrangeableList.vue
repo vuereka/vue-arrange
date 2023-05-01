@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { usePointer, useEventListener } from "@vueuse/core";
-import { ref, toRaw, onMounted, watch, computed, shallowRef } from "vue";
+import { ref, toRaw, onMounted, watch, computed, Ref } from "vue";
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
 import { type MovingItem } from "./types.js";
@@ -46,21 +46,17 @@ const emit = defineEmits<{
 
 // eslint-disable-next-line no-undef
 const { movingItem, isMoving } = useMovingItem<PayloadType>();
-const keyItemsList = ref<KeyItem[]>([]);
-const arrangedItems = computed(() =>
-  keyItemsList.value.map(({ payload }) => payload)
+const keyItemsList: Ref<KeyItem[] | undefined> = ref<KeyItem[]>();
+const arrangedItems = computed(
+  () => keyItemsList.value?.map(({ payload }) => payload) || []
 );
-
-defineExpose({
-  arrangedItems,
-});
 
 // eslint-disable-next-line no-undef
 function populateList(listData: PayloadType[]) {
   const newList: KeyItem[] = [];
   // Make sure to preserve the keys associated with the objects:
   listData.forEach((item) => {
-    const keyItem = keyItemsList.value.find(({ payload }) => item === payload);
+    const keyItem = keyItemsList.value?.find(({ payload }) => item === payload);
     if (keyItem) newList.push(keyItem);
     else
       newList.push({
@@ -79,24 +75,18 @@ const hoverOverItem = (payload: PayloadType, toIndex: number) => {
   if (movingItem?.value?.destination !== props.name || isMoving(payload)) {
     return;
   }
-  console.log(
-    "over",
-    payload,
-    toIndex,
-    arrangedItems.value,
-    movingItem.value.payload
-  );
   movingItem.value.toIndex = toIndex;
   // if the dragging item does not appear in the list, add it
-  if (!arrangedItems.value.includes(movingItem.value.payload)) {
-    keyItemsList.value.splice(toIndex, 0, {
+  if (!arrangedItems.value?.includes(movingItem.value.payload)) {
+    keyItemsList.value?.splice(toIndex, 0, {
       payload: movingItem.value.payload,
       key: movingItem.value.key,
     });
-    console.log(keyItemsList)
   }
   // else move it
-  else {
+  // N.b. we need to check for non-undefined keyItemsList because vue (bug?) behaviour;
+  // can't instantiate an empty keyItemsList as default for ref, it auto-casts to unwrapRef.
+  else if (keyItemsList.value) {
     const moverIndex = keyItemsList.value.findIndex(
       ({ payload }) => payload === movingItem.value?.payload
     );
@@ -125,7 +115,9 @@ const liftItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
   movingItem.value = {
     payload: payload,
     origin: props.name,
+    originList: arrangedItems.value,
     destination: props.name,
+    destinationList: arrangedItems.value,
     fromIndex: arrangedItems.value.indexOf(payload),
     toIndex: arrangedItems.value.indexOf(payload),
     targets: [props.targets ?? props.group ?? props.name].flat(),
@@ -141,7 +133,7 @@ const leaveList = () => {
     // leaving the list will go clunky. https://github.com/vuejs/core/issues/8173
     const itemIndex = arrangedItems.value.indexOf(movingItem.value.payload);
     if (itemIndex >= 0) {
-      keyItemsList.value.splice(itemIndex, 1);
+      keyItemsList.value?.splice(itemIndex, 1);
     }
     movingItem.value.destination = undefined;
     movingItem.value.toIndex = undefined;
@@ -155,6 +147,7 @@ const enterList = () => {
       (props.group && movingItem.value.targets.includes(props.group)))
   ) {
     movingItem.value.destination = props.name;
+    movingItem.value.destinationList = arrangedItems.value;
   }
 };
 
@@ -176,6 +169,11 @@ const beforeKey = Symbol();
 const afterKey = Symbol();
 const hoverElement = ref<HTMLElement>();
 const ArrangeableList = ref<HTMLElement>();
+
+defineExpose({
+  arrangedItems,
+});
+
 onMounted(() => {
   populateList(props.list);
   document.body.style.touchAction = "none";
@@ -190,7 +188,7 @@ onMounted(() => {
   >
     <TransitionGroup :name="options.transitionName">
       <div :key="beforeKey">
-        <slot name="before" />
+        <slot name="before" :arrangedItems="arrangedItems" />
       </div>
       <PointerElement
         v-for="(item, index) in keyItemsList"
@@ -203,10 +201,13 @@ onMounted(() => {
         @pointerdown.prevent="liftItem($event, item)"
         @pointer-enter="hoverOverItem(item.payload, index)"
       >
-        <slot :item="item.payload as any" />
+        <slot
+          :item="item.payload as PayloadType"
+          :arrangedItems="arrangedItems"
+        />
       </PointerElement>
       <div :key="afterKey">
-        <slot name="after" />
+        <slot name="after" :arrangedItems="arrangedItems" />
       </div>
     </TransitionGroup>
     <Teleport to="body" v-if="movingItem && movingItem.origin === name">

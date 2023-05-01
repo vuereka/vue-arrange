@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ArrangeableList, type MovingItem } from "../src";
+import { ArrangeableList, useMovingItem, type MovingItem } from "../src";
 
 type ItemType = { order: number; cap: string; done?: boolean };
+const { movingItem } = useMovingItem<ItemType>();
 
 const database = ref<ItemType[]>([
   { order: 0, cap: "Build app" },
@@ -31,21 +32,20 @@ const addItem = ($event: InputEvent, done?: boolean) => {
     ...database.value,
     {
       order: id++,
-      cap: (<HTMLInputElement>$event.target)?.value,
+      cap: ($event.target as HTMLInputElement)?.value,
       done,
     },
   ];
-  (<HTMLInputElement>$event.target).value = "";
+  ($event.target as HTMLInputElement).value = "";
 };
 
 const dropItem = (dropItem: MovingItem<ItemType>) => {
   if (!dropItem.destination) {
     return;
   }
-  const targetList = dropItem.destination === doneList ? DoneList : TodoList;
   const done = dropItem.destination === doneList ? true : false;
   if (dropItem.toIndex !== undefined) {
-    targetList.value?.arrangedItems.forEach((item: ItemType, index: number) => {
+    dropItem.destinationList.forEach((item: ItemType, index: number) => {
       database.value[database.value.indexOf(item)].order = index;
       database.value[database.value.indexOf(item)].done = done;
     });
@@ -53,9 +53,6 @@ const dropItem = (dropItem: MovingItem<ItemType>) => {
     database.value[database.value.indexOf(dropItem.payload)].done = done;
   }
 };
-
-const TodoList = ref<typeof ArrangeableList>();
-const DoneList = ref<typeof ArrangeableList>();
 
 const todoList = Symbol("Todo list");
 const doneList = Symbol("Done list");
@@ -66,7 +63,6 @@ const dropzones = Symbol("Drop zones");
   <div class="list">
     <div class="header">To do:</div>
     <ArrangeableList
-      ref="TodoList"
       :list="todoItems"
       :name="todoList"
       :group="dropzones"
@@ -83,9 +79,9 @@ const dropzones = Symbol("Drop zones");
           {{ item.cap }}
         </div>
       </template>
-      <template #before>
+      <template #before="{ arrangedItems }">
         <div
-          v-if="TodoList?.arrangedItems.length === 0 && TodoList?.dragging"
+          v-if="arrangedItems.length === 0 && movingItem"
           class="list-item-todo drop-zone list-item"
         />
       </template>
@@ -102,7 +98,6 @@ const dropzones = Symbol("Drop zones");
   <div class="list">
     <div class="header">Done:</div>
     <ArrangeableList
-      ref="DoneList"
       :list="doneItems"
       :name="doneList"
       :group="dropzones"
@@ -118,9 +113,9 @@ const dropzones = Symbol("Drop zones");
           {{ item.cap }}
         </div>
       </template>
-      <template #before>
+      <template #before="{ arrangedItems }">
         <div
-          v-if="DoneList?.arrangedItems.length === 0 && DoneList?.dragging"
+          v-if="arrangedItems.length === 0 && movingItem"
           class="list-item-done drop-zone list-item"
         />
       </template>
