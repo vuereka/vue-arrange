@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ArrangeableList, useMovingItem, type MovingItem } from "../src";
+import { ArrangeableList, DropZone, useMovingItem, type MovingItem } from "../src";
 
 type ItemType = { order: number; description: string; done?: boolean };
 const { movingItem } = useMovingItem<ItemType>();
@@ -64,6 +64,7 @@ const listOptions = {
   transitionName: 'transition',
   handle: true,
 }
+const bin = Symbol("bin");
 </script>
 
 <template>
@@ -121,6 +122,12 @@ const listOptions = {
       </template>
     </ArrangeableList>
   </div>
+  <DropZone :name="bin" :group="dropzones" v-slot="{isHovering}">
+    <div class="h-20 w-20 float-right m-6" :class="isHovering ? 'text-6xl' : 'text-5xl'">
+      &#128465;
+    </div>
+    <div v-if="isHovering">asdfasdfasdf</div>
+  </DropZone>
 </template>
 
 <style scoped>
