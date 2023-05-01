@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { ArrangeableList, useMovingItem, type MovingItem } from "vue-arrange";
+import { ArrangeableList, useMovingItem, type MovingItem } from "../src";
 
-type ItemType = { order: number; cap: string; done?: boolean };
+type ItemType = { order: number; description: string; done?: boolean };
 const { movingItem } = useMovingItem<ItemType>();
 
 const database = ref<ItemType[]>([
-  { order: 0, cap: "Build app" },
-  { order: 1, cap: "Debug the code" },
-  { order: 2, cap: "Commit and push to github" },
-  { order: 3, cap: "Deploy to production" },
-  { order: 4, cap: "Be awesome" },
-  { order: 0, cap: "Set up Vue project", done: true },
+  { order: 0, description: "Build app" },
+  { order: 1, description: "Debug the code" },
+  { order: 2, description: "Commit and push to github" },
+  { order: 3, description: "Deploy to production" },
+  { order: 4, description: "Be awesome" },
+  { order: 0, description: "Set up Vue project", done: true },
 ]);
-let id = database.value.length + 1;
+let counter = database.value.length + 1;
 
 const todoItems = computed<ItemType[]>(() => {
   return database.value
@@ -31,8 +31,8 @@ const addItem = ($event: InputEvent, done?: boolean) => {
   database.value = [
     ...database.value,
     {
-      order: id++,
-      cap: ($event.target as HTMLInputElement)?.value,
+      order: counter++,
+      description: ($event.target as HTMLInputElement)?.value,
       done,
     },
   ];
