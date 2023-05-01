@@ -67,26 +67,26 @@ const dropzones = Symbol("Drop zones");
       :name="todoList"
       :group="dropzones"
       :options="{
-        hoverClass: 'hoverClass',
-        pickedItemClass: 'pickedItemClass',
-        unpickedItemClass: 'arrangeable',
+        hoverClass: 'opacity-70 cursor-grabbing',
+        pickedItemClass: 'invisible',
+        unpickedItemClass: 'cursor-grab',
         transitionName: 'transition',
       }"
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="list-item-todo list-item">
-          {{ item.cap }}
+        <div class="bg-teal-200 listitem">
+          {{ item.description }}
         </div>
       </template>
       <template #before="{ arrangedItems }">
         <div
           v-if="arrangedItems.length === 0 && movingItem"
-          class="list-item-todo drop-zone list-item"
+          class="bg-teal-200 drop-zone listitem"
         />
       </template>
       <template #after>
-        <div class="list-item-todo list-item">
+        <div class="bg-teal-200 listitem">
           <input
             @change="addItem($event as InputEvent)"
             placeholder="New item"
@@ -102,24 +102,70 @@ const dropzones = Symbol("Drop zones");
       :name="doneList"
       :group="dropzones"
       :options="{
-        hoverClass: 'hoverClass',
-        pickedItemClass: 'pickedItemClass',
-        unpickedItemClass: 'arrangeable',
+        hoverClass: 'opacity-70 cursor-grabbing',
+        pickedItemClass: 'invisible',
+        unpickedItemClass: 'cursor-grab',
         transitionName: 'transition',
       }"
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="list-item-done list-item">
-          {{ item.cap }}
+        <div class="bg-fuchsia-200 listitem">
+          {{ item.description }}
         </div>
       </template>
       <template #before="{ arrangedItems }">
         <div
           v-if="arrangedItems.length === 0 && movingItem"
-          class="list-item-done drop-zone list-item"
+          class="bg-fuchsia-200 h-12 listitem drop-zone"
         />
       </template>
     </ArrangeableList>
   </div>
 </template>
+
+<style scoped>
+.list {
+  width: 224px;
+  height: fit-content;
+  float: left;
+  margin: 4px;
+  border-radius: 6px;
+  border-width: 2px;
+  border-color: black;
+  border-style: groove;
+  text-align: left;
+}
+
+.header {
+  padding: 8px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.listitem {
+  display: flex;
+  align-items: center;
+  width: 216px;
+  margin: 2px;
+  padding: 8px;
+  font-size: 20px;
+  border-radius: 4px;
+  border-width: 2px;
+  border-color: black;
+  border-style: groove;
+}
+
+input {
+  width: 100%;
+  font-size: 18px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid black;
+}
+
+.drop-zone {
+  border-style: dashed;
+}
+</style>

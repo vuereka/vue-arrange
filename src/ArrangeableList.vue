@@ -169,6 +169,9 @@ const dropItem = () => {
   if (movingItem.value === undefined || movingItem.value.origin !== props.name)
     return;
   emit("dropItem", toRaw(movingItem.value));
+  // repopulation is needed in case the drop event did not trigger a props change
+  // otherwise the dropped item disappears.
+  populateList(props.list);
   movingItem.value = undefined;
 };
 
@@ -203,7 +206,7 @@ onMounted(() => {
             ? options.pickedItemClass
             : options.unpickedItemClass
         "
-        @pointerdown.prevent="liftItem($event, item)"
+        @pointerdown.left.prevent="liftItem($event, item)"
         @pointer-enter="hoverOverItem(index)"
       >
         <slot
