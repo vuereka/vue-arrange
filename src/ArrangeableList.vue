@@ -110,6 +110,7 @@ const hoverOverItem = (payload: PayloadType, toIndex: number) => {
 let offsetX: number = 0;
 let offsetY: number = 0;
 const liftItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
+  console.log($event, pointer.y.value);
   offsetX = $event.offsetX;
   offsetY = $event.offsetY;
   movingItem.value = {
@@ -214,7 +215,7 @@ onMounted(() => {
       <div
         ref="hoverElement"
         :class="options.hoverClass"
-        style="z-index: 1000000; position: absolute"
+        style="z-index: 100000000; position: fixed"
         :style="{
           left: pointer.x.value - offsetX + 'px',
           top: pointer.y.value - offsetY + 'px',
