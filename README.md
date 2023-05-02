@@ -13,7 +13,8 @@ Features:
 * Utility-class friendly
 * Completely built in Typescript. Supports generic items.
 
-## Component `ArrangeableList`
+## Component: 
+## `ArrangeableList`
 
 ### **Props:**
 
@@ -56,18 +57,24 @@ Features:
 
 ### **Example**
 
-See example folder for working example using tailwindcss.
+See [example folder](./example/) for working example using tailwindcss.
 
-## Utility composable `useMovingItem<PayloadType>()`
+## Composable:
+##  `useMovingItem<PayloadType>()`
 
 Exposes:
 
 * `movingItem`, of type `MovingItem<PayloadType>`; the item currently being dragged around by the user from any list at all. If using typescript, it should use the same `PayloadType` as the list items of the `ArrangeableList`.
 * `isMoving(item: PayloadType) => boolean`; test whether `item` is currently being dragged.
 
-## Type: `MovingType<PayloadType>`
+``` typescript
+const { movingItem, isMoving } = useMovingItem<MyObjectType>(); 
+```
 
-Information about what is/was being dragged around/dropped.
+## Type: 
+## `MovingType<PayloadType>`
+
+Information about what is/was being dragged/dropped.
 
 ``` typescript
 type MovingItem<PayloadType> = {
