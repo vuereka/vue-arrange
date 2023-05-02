@@ -82,7 +82,7 @@ const dropzones = Symbol("Drop zones");
       <template #before="{ arrangedItems }">
         <div
           v-if="arrangedItems.length === 0 && movingItem"
-          class="bg-teal-200 drop-zone listitem"
+          class="bg-teal-200 h-12 drop-zone listitem"
         />
       </template>
       <template #after>
