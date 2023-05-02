@@ -1,7 +1,7 @@
 {
   "name": "vue-arrange",
   "private": false,
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": "Frido Emans",
   "license": "MIT",
   "homepage": "https://github.com/vuereka/vue-arrange",
@@ -9,6 +9,9 @@
     "type": "git",
     "url": "https://github.com/vuereka/vue-arrange"
   },
+  "keywords": [
+    "vue3", "vue", "vue-component", "component", "vuejs", "sortable list", "list", "sortable", "sortablejs", "draggable", "drag and drop", "transition"
+  ],
   "type": "module",
   "files": [
     "dist"
