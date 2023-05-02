@@ -2,6 +2,13 @@
   "name": "vue-arrange",
   "private": false,
   "version": "0.2.2",
+  "author": "Frido Emans",
+  "license": "MIT",
+  "homepage": "https://github.com/vuereka/vue-arrange",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vuereka/vue-arrange"
+  },
   "type": "module",
   "files": [
     "dist"
