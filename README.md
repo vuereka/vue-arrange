@@ -13,8 +13,24 @@ Features:
 * Utility-class friendly
 * Completely built in Typescript. Supports generic items.
 
-## Component: 
-## `ArrangeableList`
+[Screencast from 02-05-23 02:08:14.webm](https://user-images.githubusercontent.com/625851/235612733-66e1c341-f29f-4611-9ce1-25405e4a289d.webm)
+
+## Usage:
+
+### To install:
+
+```
+npm add vue-arrange
+```
+
+### To run the example app:
+
+* clone the package
+* `npm i; npm run dev`
+
+# Functional Description
+
+## Component `ArrangeableList`
 
 ### **Props:**
 
@@ -59,8 +75,7 @@ Features:
 
 See [example folder](./example/) for working example using tailwindcss.
 
-## Composable:
-##  `useMovingItem<PayloadType>()`
+## Composable `useMovingItem<PayloadType>()`
 
 Exposes:
 
@@ -71,8 +86,7 @@ Exposes:
 const { movingItem, isMoving } = useMovingItem<MyObjectType>(); 
 ```
 
-## Type: 
-## `MovingType<PayloadType>`
+## Type `MovingType<PayloadType>`
 
 Information about what is/was being dragged/dropped.
 
