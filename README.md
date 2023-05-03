@@ -13,7 +13,7 @@ Features:
 * Utility-class friendly
 * Completely built in Typescript. Supports generic items.
 
-[showcase](./example/showcase.webm)
+[showcase](./example/showcase.webm.mov)
 
 ## Usage:
 
