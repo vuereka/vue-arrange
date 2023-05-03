@@ -13,7 +13,7 @@ Features:
 * Utility-class friendly
 * Completely built in Typescript. Supports generic items.
 
-<video src='./example/showcase.webm.mov' width=180/>
+<video src='./example/showcase.webm.mov' width=180></video>
 
 ## Usage
 
