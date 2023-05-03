@@ -13,7 +13,7 @@ Features:
 * Utility-class friendly
 * Completely built in Typescript. Supports generic items.
 
-[Screencast from 02-05-23 02:08:14.webm](https://user-images.githubusercontent.com/625851/235612733-66e1c341-f29f-4611-9ce1-25405e4a289d.webm)
+[showcase](./example/showcase.webm)
 
 ## Usage:
 
