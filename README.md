@@ -4,7 +4,7 @@ Component library to drag and drop items across lists in Vue3.
 
 Comparable to, and inspired by, sortablejs, but unrelated and not even trying to use the same API. Focused on vertical lists, but I guess it should work in any direction.
 
-Features: 
+Features:
 
 * Rearranging a component list.
 * Dragging/dropping items from one list to another.
@@ -13,17 +13,17 @@ Features:
 * Utility-class friendly
 * Completely built in Typescript. Supports generic items.
 
-[showcase](./example/showcase.webm.mov)
+<video src='./example/showcase.webm.mov' width=180/>
 
-## Usage:
+## Usage
 
-### To install:
+### To install
 
 ```
 npm add vue-arrange
 ```
 
-### To run the example app:
+### To run the example app
 
 * clone the package
 * `npm i; npm run dev`
