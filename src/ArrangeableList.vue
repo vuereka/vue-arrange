@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { usePointer, useEventListener } from "@vueuse/core";
-import { ref, toRaw, onMounted, watch, computed, Ref } from "vue";
+import { ref, toRaw, onMounted, watch, computed, Ref, shallowRef } from "vue";
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
 import { type MovingItem } from "./types.js";
@@ -10,6 +10,7 @@ type ArrangeableOptions = {
   pickedItemClass?: string;
   unpickedItemClass?: string;
   transitionName?: string;
+  handle?: boolean;
 };
 
 type Props = {
@@ -145,8 +146,10 @@ const enterList = () => {
 let offsetX: number = 0;
 let offsetY: number = 0;
 const liftItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
-  offsetX = $event.offsetX;
-  offsetY = $event.offsetY;
+  if(props.options.handle && ($event.target as HTMLElement).attributes.getNamedItem('name')?.value !== 'handle') return;
+  const targetBox = (<HTMLElement>$event.currentTarget)?.getBoundingClientRect();
+  offsetX = pointer.x.value - targetBox.x;
+  offsetY = pointer.y.value - targetBox.y;
   movingItem.value = {
     payload: payload,
     origin: props.name,
@@ -180,7 +183,6 @@ useEventListener(document, "pointerup", dropItem);
 
 const beforeKey = Symbol();
 const afterKey = Symbol();
-const hoverElement = ref<HTMLElement>();
 
 defineExpose({
   arrangedItems,
@@ -206,7 +208,7 @@ onMounted(() => {
             ? options.pickedItemClass
             : options.unpickedItemClass
         "
-        @pointerdown.left.prevent="liftItem($event, item)"
+        @pointerdown.left.prevent="liftItem($event, item, $)"
         @pointer-enter="hoverOverItem(index)"
       >
         <slot
@@ -220,7 +222,6 @@ onMounted(() => {
     </TransitionGroup>
     <Teleport to="body" v-if="movingItem && movingItem.origin === name">
       <div
-        ref="hoverElement"
         :class="options.hoverClass"
         style="z-index: 100000000; position: fixed"
         :style="{

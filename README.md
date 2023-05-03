@@ -44,6 +44,7 @@ npm add vue-arrange
   * `pickedItemClass`: string. Optional. The class/classes of the item you are dragging as it shows in the lists before it is dropped.
   * `unpickedItemClass`: string. Optional. The class/classes of the items that are not being dragged.
   * `transitionName`: string. Optional. Under the hood this uses Vue TransitionGroups. Put the name of the class-prefix for the transition here. See <https://vuejs.org/guide/built-ins/transition-group.html#move-transitions>
+  * `handle`: boolean. Optional, defaults to false. If true, only elements within the template with attribute `name` set to `handle` can be used to move the item.
 
 ### **Slots:**
 

@@ -57,6 +57,13 @@ const dropItem = (dropItem: MovingItem<ItemType>) => {
 const todoList = Symbol("Todo list");
 const doneList = Symbol("Done list");
 const dropzones = Symbol("Drop zones");
+
+const listOptions = {
+  hoverClass: 'opacity-70 cursor-grabbing box-shadow-2xl',
+  pickedItemClass: 'invisible',
+  transitionName: 'transition',
+  handle: true,
+}
 </script>
 
 <template>
@@ -66,27 +73,23 @@ const dropzones = Symbol("Drop zones");
       :list="todoItems"
       :name="todoList"
       :group="dropzones"
-      :options="{
-        hoverClass: 'opacity-70 cursor-grabbing',
-        pickedItemClass: 'invisible',
-        unpickedItemClass: 'cursor-grab',
-        transitionName: 'transition',
-      }"
+      :options="listOptions"
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="bg-teal-200 listitem">
+        <div class="bg-teal-200 listitem hover:drop-shadow">
+          <div name="handle" class="mr-2 cursor-grab">&#65049;</div>
           {{ item.description }}
         </div>
       </template>
       <template #before="{ arrangedItems }">
         <div
           v-if="arrangedItems.length === 0 && movingItem"
-          class="bg-teal-200 h-12 drop-zone listitem"
+          class="bg-teal-100 h-12 drop-zone listitem"
         />
       </template>
       <template #after>
-        <div class="bg-teal-200 listitem">
+        <div class="bg-teal-200 listitem hover:drop-shadow">
           <input
             @change="addItem($event as InputEvent)"
             placeholder="New item"
@@ -101,23 +104,19 @@ const dropzones = Symbol("Drop zones");
       :list="doneItems"
       :name="doneList"
       :group="dropzones"
-      :options="{
-        hoverClass: 'opacity-70 cursor-grabbing',
-        pickedItemClass: 'invisible',
-        unpickedItemClass: 'cursor-grab',
-        transitionName: 'transition',
-      }"
+      :options="listOptions"
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="bg-fuchsia-200 listitem">
+        <div class="bg-fuchsia-200 listitem hover:drop-shadow">
+          <div name="handle" class="mr-2 cursor-grab">&#65049;</div>
           {{ item.description }}
         </div>
       </template>
       <template #before="{ arrangedItems }">
         <div
           v-if="arrangedItems.length === 0 && movingItem"
-          class="bg-fuchsia-200 h-12 listitem drop-zone"
+          class="bg-fuchsia-100 h-12 listitem drop-zone"
         />
       </template>
     </ArrangeableList>
