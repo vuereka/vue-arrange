@@ -28,6 +28,7 @@
   "scripts": {
     "dev": "vite -c ./vite.config.ts ./example/",
     "build": "vite build && vue-tsc --emitDeclarationOnly",
+    "build_example": "vite build --mode example -c ./vite.config.ts ./example/",
     "preview": "vite preview",
     "prepare": "husky install"
   },
