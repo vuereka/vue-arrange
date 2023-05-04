@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { usePointer, useEventListener } from "@vueuse/core";
-import { ref, toRaw, onMounted, watch, computed, Ref, shallowRef } from "vue";
+import { ref, toRaw, onMounted, watch, computed, Ref } from "vue";
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
 import { type MovingItem } from "./types.js";
@@ -208,7 +208,7 @@ onMounted(() => {
             ? options.pickedItemClass
             : options.unpickedItemClass
         "
-        @pointerdown.left.prevent="liftItem($event, item, $)"
+        @pointerdown.left.prevent="liftItem($event, item)"
         @pointer-enter="hoverOverItem(index)"
       >
         <slot
