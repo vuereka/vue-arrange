@@ -43,6 +43,10 @@ const dropItem = (dropItem: MovingItem<ItemType>) => {
   if (!dropItem.destination) {
     return;
   }
+  if(dropItem.destination === bin) {
+    database.value.splice(database.value.indexOf(dropItem.payload), 1);
+    return;
+  }
   const done = dropItem.destination === doneList ? true : false;
   if (dropItem.toIndex !== undefined) {
     dropItem.destinationList.forEach((item: ItemType, index: number) => {
@@ -123,10 +127,12 @@ const bin = Symbol("bin");
     </ArrangeableList>
   </div>
   <DropZone :name="bin" :group="dropzones" v-slot="{isHovering}">
-    <div class="h-20 w-20 float-right m-6" :class="isHovering ? 'text-6xl' : 'text-5xl'">
-      &#128465;
+    <div 
+      class="h-20 w-20 m-6 transition-all flex justify-center align-middle" 
+      :class="isHovering ? 'text-6xl' : 'text-5xl'"
+      >
+        &#128465;
     </div>
-    <div v-if="isHovering">asdfasdfasdf</div>
   </DropZone>
 </template>
 
