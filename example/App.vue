@@ -126,9 +126,9 @@ const bin = Symbol("bin");
       </template>
     </ArrangeableList>
   </div>
-  <DropZone :name="bin" :group="dropzones" v-slot="{isHovering}">
+  <DropZone :name="bin" :group="dropzones" v-slot="{isHovering}" class="inline-block" >
     <div 
-      class="h-20 w-20 m-6 transition-all flex justify-center align-middle" 
+      class="h-32 w-32 transition-all flex justify-center items-center" 
       :class="isHovering ? 'text-6xl' : 'text-5xl'"
       >
         &#128465;

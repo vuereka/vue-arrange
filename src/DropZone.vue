@@ -61,11 +61,10 @@ const enterZone = () => {
   <PointerElement 
     @pointer-leave="leaveZone" 
     @pointer-enter="enterZone"
-    style="float: left"
   >
       <slot 
-      :isHovering="movingItem?.destination === name"
-      :class="movingItem?.destination === name ? options.hoverClass : ''"
+        :isHovering="movingItem?.destination === name"
+        :class="movingItem?.destination === name ? options.hoverClass : ''"
       />
   </PointerElement>
 </template>
