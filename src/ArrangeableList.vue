@@ -135,7 +135,6 @@ const leaveList = () => {
 const enterList = () => {
   if (
     movingItem.value &&
-    movingItem.value.destination !== props.name &&
     (movingItem.value.targets.includes(props.name) ||
       (props.group && movingItem.value.targets.includes(props.group)))
   ) {
