@@ -1,7 +1,7 @@
 {
   "name": "vue-arrange",
   "private": false,
-  "version": "0.3.3",
+  "version": "0.4.0",
   "author": "Frido Emans",
   "license": "MIT",
   "homepage": "https://github.com/vuereka/vue-arrange",
@@ -10,7 +10,18 @@
     "url": "https://github.com/vuereka/vue-arrange"
   },
   "keywords": [
-    "vue3", "vue", "vue-component", "component", "vuejs", "sortable list", "list", "sortable", "sortablejs", "draggable", "drag and drop", "transition"
+    "vue3",
+    "vue",
+    "vue-component",
+    "component",
+    "vuejs",
+    "sortable list",
+    "list",
+    "sortable",
+    "sortablejs",
+    "draggable",
+    "drag and drop",
+    "transition"
   ],
   "type": "module",
   "files": [
@@ -53,7 +64,7 @@
     "eslint-plugin-vue": "^9.3.0",
     "husky": "^8.0.3",
     "jsdom": "^20.0.3",
-    "lint-staged": "^13.2.0",
+    "lint-staged": "^13.2.2",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.23",
     "prettier": "^2.8.4",
@@ -64,5 +75,8 @@
     "vite": "^4.3.0",
     "vitest": "^0.25.6",
     "vue-tsc": "^1.2.0"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   }
 }
