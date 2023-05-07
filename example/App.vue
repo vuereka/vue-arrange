@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { ArrangeableList, DropZone, useMovingItem, type MovingItem } from "../src";
+import { computed, ref, watch } from "vue";
+import {
+  ArrangeableList,
+  DropZone,
+  useMovingItem,
+  type MovingItem,
+  ArrangeableOptions,
+} from "../src";
 
 type ItemType = { order: number; description: string; done?: boolean };
 const { movingItem } = useMovingItem<ItemType>();
@@ -40,13 +46,16 @@ const addItem = ($event: InputEvent, done?: boolean) => {
 };
 
 const dropItem = (dropItem: MovingItem<ItemType>) => {
+  console.log(dropItem);
   if (!dropItem.destination) {
     return;
   }
-  if(dropItem.destination === bin) {
+  if (dropItem.destination === trashBin) {
+    listOptions.value.hoverTransition.leaveToClass = `scale-0`;
     database.value.splice(database.value.indexOf(dropItem.payload), 1);
     return;
   }
+  listOptions.value.hoverTransition.leaveToClass = "scale-100 opacity-0";
   const done = dropItem.destination === doneList ? true : false;
   if (dropItem.toIndex !== undefined) {
     dropItem.destinationList.forEach((item: ItemType, index: number) => {
@@ -61,14 +70,20 @@ const dropItem = (dropItem: MovingItem<ItemType>) => {
 const todoList = Symbol("Todo list");
 const doneList = Symbol("Done list");
 const dropzones = Symbol("Drop zones");
+const trashBin = Symbol("Trash bin");
+const trashBinElement = ref<HTMLElement>();
 
-const listOptions = {
-  hoverClass: 'opacity-70 cursor-grabbing box-shadow-2xl',
-  pickedItemClass: 'invisible',
-  transitionName: 'transition',
+const listOptions = ref<ArrangeableOptions>({
+  hoverClass: "opacity-70 cursor-grabbing drop-shadow-2xl scale-105",
+  hoverTransition: {
+    leaveFromClass: "opacity-70",
+    leaveToClass: "opacity-0 scale-0",
+    leaveActiveClass: "transition-all duration-300 linear",
+  },
+  pickedItemClass: "invisible",
+  listTransition: { name: "list-transition" },
   handle: true,
-}
-const bin = Symbol("bin");
+});
 </script>
 
 <template>
@@ -82,7 +97,7 @@ const bin = Symbol("bin");
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="bg-teal-200 listitem hover:drop-shadow">
+        <div class="listitem bg-teal-200 hover:drop-shadow-lg">
           <div name="handle" class="mr-2 cursor-grab">&#65049;</div>
           {{ item.description }}
         </div>
@@ -90,11 +105,11 @@ const bin = Symbol("bin");
       <template #before="{ arrangedItems }">
         <div
           v-if="arrangedItems.length === 0 && movingItem"
-          class="bg-teal-100 h-12 drop-zone listitem"
+          class="drop-zone listitem h-12 bg-teal-100"
         />
       </template>
       <template #after>
-        <div class="bg-teal-200 listitem hover:drop-shadow">
+        <div class="listitem bg-teal-200 hover:drop-shadow">
           <input
             @change="addItem($event as InputEvent)"
             placeholder="New item"
@@ -113,7 +128,7 @@ const bin = Symbol("bin");
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="bg-fuchsia-200 listitem hover:drop-shadow">
+        <div class="listitem bg-fuchsia-200 hover:drop-shadow">
           <div name="handle" class="mr-2 cursor-grab">&#65049;</div>
           {{ item.description }}
         </div>
@@ -121,17 +136,23 @@ const bin = Symbol("bin");
       <template #before="{ arrangedItems }">
         <div
           v-if="arrangedItems.length === 0 && movingItem"
-          class="bg-fuchsia-100 h-12 listitem drop-zone"
+          class="listitem drop-zone h-12 bg-fuchsia-100"
         />
       </template>
     </ArrangeableList>
   </div>
-  <DropZone :name="bin" :group="dropzones" v-slot="{isHovering}" class="inline-block" >
-    <div 
-      class="h-32 w-32 transition-all flex justify-center items-center" 
+  <DropZone
+    ref="trashBinElement"
+    :name="trashBin"
+    :group="dropzones"
+    v-slot="{ isHovering }"
+    class="inline-block"
+  >
+    <div
+      class="flex h-32 w-32 items-center justify-center transition-all"
       :class="isHovering ? 'text-6xl' : 'text-5xl'"
-      >
-        &#128465;
+    >
+      &#128465;
     </div>
   </DropZone>
 </template>

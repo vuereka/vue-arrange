@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
-import { MovingItem } from "vue-arrange";
+import { type MovingItem } from "./types";
 import { toRaw } from "vue";
 
 type ArrangeableOptions = {
@@ -34,17 +34,14 @@ const emit = defineEmits<{
   (e: "leaveZone", item: MovingItem<PayloadType>): void;
 }>();
 
-
 const leaveZone = () => {
-  console.log('leve zone  ')
   if (movingItem.value?.destination === props.name) {
     movingItem.value.destination = undefined;
-    emit("leaveZone", toRaw(movingItem.value))
+    emit("leaveZone", toRaw(movingItem.value));
   }
 };
 
 const enterZone = () => {
-  console.log('enter-zone')
   if (
     movingItem.value &&
     movingItem.value.destination !== props.name &&
@@ -52,20 +49,16 @@ const enterZone = () => {
       (props.group && movingItem.value.targets.includes(props.group)))
   ) {
     movingItem.value.destination = props.name;
-    emit("enterZone", toRaw(movingItem.value))
+    emit("enterZone", toRaw(movingItem.value));
   }
 };
 </script>
 
 <template>
-  <PointerElement 
-    @pointer-leave="leaveZone" 
-    @pointer-enter="enterZone"
-  >
-      <slot 
-        :isHovering="movingItem?.destination === name"
-        :class="movingItem?.destination === name ? options.hoverClass : ''"
-      />
+  <PointerElement @pointer-leave="leaveZone" @pointer-enter="enterZone">
+    <slot
+      :isHovering="movingItem?.destination === name"
+      :class="movingItem?.destination === name ? options.hoverClass : ''"
+    />
   </PointerElement>
 </template>
-

@@ -6,15 +6,15 @@
   See Vue documentation on how to use css-based transitions: 
   https://vuejs.org/guide/built-ins/transition.html#css-based-transitions
 */
-.transition-move, 
-.transition-enter-active,
-.transition-leave-active {
+.list-transition-move,
+.list-transition-enter-active,
+.list-transition-leave-active {
   transition: all 0.3s ease;
 }
-.transition-enter-from,
-.transition-leave-to {
+.list-transition-enter-from,
+.list-transition-leave-to {
   opacity: 0;
 }
-.transition-leave-active {
+.list-transition-leave-active {
   position: absolute;
 }

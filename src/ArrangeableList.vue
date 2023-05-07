@@ -1,19 +1,28 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { usePointer, useEventListener } from "@vueuse/core";
-import { ref, toRaw, onMounted, watch, computed, Ref } from "vue";
+import {
+  ref,
+  toRaw,
+  onMounted,
+  watch,
+  computed,
+  Ref,
+  TransitionProps,
+} from "vue";
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
 import { type MovingItem } from "./types.js";
 
-type ArrangeableOptions = {
+export type ArrangeableOptions = {
   hoverClass?: string;
   pickedItemClass?: string;
   unpickedItemClass?: string;
-  transitionName?: string;
+  listTransition?: TransitionProps;
+  hoverTransition?: TransitionProps;
   handle?: boolean;
 };
 
-type Props = {
+export type ArrangeableProps<PayloadType> = {
   options?: ArrangeableOptions;
   //  FIXME: once eslint-vue-typescript plugin supports generics, remove all these no-undef lines.
   // eslint-disable-next-line no-undef
@@ -23,14 +32,15 @@ type Props = {
   targets?: string | symbol | Array<string | symbol>;
 };
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ArrangeableProps<PayloadType>>(), {
   // eslint-disable-next-line vue/require-valid-default-prop
   name: Symbol(),
   options: () => ({
     hoverClass: "",
+    hoverTransition: {},
     pickedItemClass: "",
     unpickedItemClass: "",
-    transitionName: "",
+    listTransition: {},
   }),
 });
 
@@ -80,7 +90,8 @@ const emit = defineEmits<{
 const hoverOverItem = (index: number) => {
   enterList();
   if (
-    movingItem?.value?.destination !== props.name ||
+    !movingItem.value ||
+    movingItem.value?.destination !== props.name ||
     isMoving(arrangedItems.value[index])
   ) {
     return;
@@ -146,12 +157,19 @@ const enterList = () => {
 let offsetX: number = 0;
 let offsetY: number = 0;
 const liftItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
-  if(props.options.handle && ($event.target as HTMLElement).attributes.getNamedItem('name')?.value !== 'handle') return;
-  const targetBox = (<HTMLElement>$event.currentTarget)?.getBoundingClientRect();
+  if (
+    props.options?.handle &&
+    ($event.target as HTMLElement).attributes.getNamedItem("name")?.value !==
+      "handle"
+  )
+    return;
+  const targetBox = (<HTMLElement>(
+    $event.currentTarget
+  ))?.getBoundingClientRect();
   offsetX = pointer.x.value - targetBox.x;
   offsetY = pointer.y.value - targetBox.y;
   movingItem.value = {
-    payload: payload,
+    payload,
     origin: props.name,
     originList: arrangedItems.value,
     destination: props.name,
@@ -196,7 +214,7 @@ onMounted(() => {
 
 <template>
   <PointerElement @pointer-leave="leaveList" @pointer-enter="enterList">
-    <TransitionGroup :name="options.transitionName">
+    <TransitionGroup v-bind="options.listTransition">
       <div :key="beforeKey">
         <slot name="before" :arrangedItems="arrangedItems" />
       </div>
@@ -220,17 +238,21 @@ onMounted(() => {
         <slot name="after" :arrangedItems="arrangedItems" />
       </div>
     </TransitionGroup>
-    <Teleport to="body" v-if="movingItem && movingItem.origin === name">
-      <div
-        :class="options.hoverClass"
-        style="z-index: 100000000; position: fixed"
+    <Teleport to="body">
+      <Transition
         :style="{
           left: pointer.x.value - offsetX + 'px',
           top: pointer.y.value - offsetY + 'px',
         }"
+        style="z-index: 100000000; position: fixed"
+        :class="options.hoverClass"
+        v-bind="options.hoverTransition"
       >
-        <slot :item="movingItem.payload as any" :dragging="true" />
-      </div>
+        <slot
+          v-if="movingItem && movingItem.origin === name"
+          :item="movingItem.payload"
+        />
+      </Transition>
     </Teleport>
   </PointerElement>
 </template>
