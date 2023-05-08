@@ -162,13 +162,11 @@ let offsetY: number = 0;
 const liftItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
   if (
     props.options?.handle &&
-    ($event.target as HTMLElement).attributes.getNamedItem("name")?.value !==
+    ($event.target as Element).attributes.getNamedItem("name")?.value !==
       "handle"
   )
     return;
-  const targetBox = (<HTMLElement>(
-    $event.currentTarget
-  ))?.getBoundingClientRect();
+  const targetBox = ($event.currentTarget as Element)?.getBoundingClientRect();
   offsetX = pointer.x.value - targetBox.x;
   offsetY = pointer.y.value - targetBox.y;
   movingItem.value = {
@@ -181,6 +179,7 @@ const liftItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
     fromIndex: arrangedItems.value.indexOf(payload),
     toIndex: arrangedItems.value.indexOf(payload),
     targets: [props.targets ?? props.group ?? props.name].flat(),
+    originItemBoundingBox: targetBox,
     key,
   };
   emit("liftItem", toRaw(movingItem.value));

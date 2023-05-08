@@ -93,13 +93,15 @@ Information about what is/was being dragged/dropped.
 
 ```typescript
 type MovingItem<PayloadType> = {
-  payload: PayloadType; // The item object being moved
-  fromIndex: number; // the 0-based list-index where it was picked up
-  origin: string | symbol; // the name of the list from which it was picked up
+  payload: PayloadType; // The item object being moved.
+  hoverElement?: Ref<HTMLElement>; // the element ref of the hovering item.
+  fromIndex: number; // the 0-based list-index where it was picked up.
+  origin: string | symbol; // the name of the list from which it was picked up.
   originList: PayloadType[]; // the arranged items-list from where the item came as it appears now.
   toIndex?: number; // the 0-based list-index where the item is hovering or being dropped.
   destination?: string | symbol; // the name of the list where it is hovering over or being dropped.
   destinationList?: PayloadType[]; // the arranged items-list where the item is hovering over or being dropped as it appears now.
+  originItemBoundingBox?: DOMRect; // the bounding box of the original location of the picked item.
   targets: Array<string | symbol>; // the names/groups of the lists where this item can be dropped.
 };
 ```

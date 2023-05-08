@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
+import colors from "tailwindcss/colors";
 import {
   ArrangeableList,
   DropZone,
@@ -46,77 +47,76 @@ const addItem = ($event: InputEvent, done?: boolean) => {
 };
 
 const dropItem = (dropItem: MovingItem<ItemType>) => {
+  // To make the hoverItem slide to an arbitrary location, this needs to be done with 'style',
+  // which is impossible using the vue transition, which only uses classes.
+  // To make the code cleaner, everything is done using css rather than hybrid.
+  // There are 4 drop-cases in this simple app, each with its own logic and css transition:
+  // 1. drop in the middle of nowhere, return to its original place
+  // 2. drop in the trash bin
+  // 3. drop into a list
+  // 4. drop into the dropzone of an empty list
+  const style = dropItem.hoverElement.value.style;
+  style.transition = "all 0.22s ease";
   if (!dropItem.destination) {
+    Object.assign(style, {
+      opacity: 1,
+      scale: 1,
+      top: dropItem.originItemBoundingBox.top + "px", // N.b. does not account for scrolling
+      left: dropItem.originItemBoundingBox.left + "px",
+    });
     return;
   }
-
   if (dropItem.destination === trashBin) {
-    const trashBinBox = trashBinElement.value?.getBoundingClientRect();
-    console.log(trashBinBox);
-    listOptions.value.hoverTransition.leaveToClass = "scale-0";
-    // dropItem.hoverElement.value && (dropItem.hoverElement.value.style['transform'] = 'translate(-250px)')
-    if (dropItem.hoverElement.value) {
-      const hoverBox = dropItem.hoverElement.value.getBoundingClientRect();
-      dropItem.hoverElement.value.style["transition"] = "all 0.2s ease";
-      dropItem.hoverElement.value.style["top"] = `${
-        (trashBinBox.bottom -
-          trashBinBox.top -
-          hoverBox.bottom +
-          hoverBox.top) /
-          2 +
-        trashBinBox.top
-      }px`;
-      dropItem.hoverElement.value.style["left"] = `${
-        (trashBinBox.right -
-          trashBinBox.left -
-          hoverBox.right +
-          hoverBox.left) /
-          2 +
-        trashBinBox.left
-      }px`;
-    }
+    // transition styles:
+    const binBox = trashBinElement.value.getBoundingClientRect();
+    const hoverBox = dropItem.hoverElement.value.getBoundingClientRect();
+    Object.assign(style, {
+      top: `${(binBox.bottom + binBox.y - hoverBox.bottom + hoverBox.y) / 2}px`,
+      left: `${(binBox.right + binBox.x - hoverBox.right + hoverBox.x) / 2}px`,
+      scale: 0,
+    });
+    // logic:
     database.value.splice(database.value.indexOf(dropItem.payload), 1);
     return;
   }
-  listOptions.value.hoverTransition.leaveToClass = "scale-100 opacity-0";
-  if (dropItem.hoverElement.value) {
-    const hoverBox = dropItem.hoverElement.value.getBoundingClientRect();
-    dropItem.hoverElement.value.style["transition"] = "all 0.2s ease";
-    dropItem.hoverElement.value.style["top"] = `${
-      (trashBinBox.bottom - trashBinBox.top - hoverBox.bottom + hoverBox.top) /
-        2 +
-      trashBinBox.top
-    }px`;
-    dropItem.hoverElement.value.style["left"] = `${
-      (trashBinBox.right - trashBinBox.left - hoverBox.right + hoverBox.left) /
-        2 +
-      trashBinBox.left
-    }px`;
-  }
+  // else, (if there is a target, and it is not the trash bin)
   const done = dropItem.destination === doneList ? true : false;
+  let snapToBox;
   if (dropItem.toIndex !== undefined) {
+    snapToBox = document
+      .getElementsByClassName("pickedItem")[0]
+      ?.getBoundingClientRect();
+    // logic
     dropItem.destinationList.forEach((item: ItemType, index: number) => {
       database.value[database.value.indexOf(item)].order = index;
       database.value[database.value.indexOf(item)].done = done;
     });
   } else {
+    snapToBox = (done ? doneDrop : todoDrop).value.getBoundingClientRect();
+    // logic:
     database.value[database.value.indexOf(dropItem.payload)].done = done;
   }
+  Object.assign(style, {
+    top: snapToBox.top + "px",
+    left: snapToBox.left + "px",
+    opacity: 1,
+    scale: 1,
+    backgroundColor: done ? colors.fuchsia[200] : colors.teal[200],
+  });
 };
 
 const todoList = Symbol("Todo list");
 const doneList = Symbol("Done list");
 const dropzones = Symbol("Drop zones");
 const trashBin = Symbol("Trash bin");
-const trashBinElement = ref<HTMLElement>();
+
+const trashBinElement = ref<Element>();
+const todoDrop = ref<Element>();
+const doneDrop = ref<Element>();
 
 const listOptions = ref<ArrangeableOptions>({
   hoverClass: "opacity-70 cursor-grabbing drop-shadow-2xl scale-105",
-  hoverTransition: {
-    leaveFromClass: "opacity-70 scale-105",
-    leaveActiveClass: "transition-all duration-500 linear",
-  },
-  pickedItemClass: "invisible",
+  pickedItemClass: "invisible pickedItem",
   listTransition: { name: "list-transition" },
   handle: true,
 });
@@ -140,6 +140,7 @@ const listOptions = ref<ArrangeableOptions>({
       </template>
       <template #before="{ arrangedItems }">
         <div
+          ref="todoDrop"
           v-if="arrangedItems.length === 0 && movingItem"
           class="drop-zone listitem h-12 bg-teal-100"
         />
@@ -171,6 +172,7 @@ const listOptions = ref<ArrangeableOptions>({
       </template>
       <template #before="{ arrangedItems }">
         <div
+          ref="doneDrop"
           v-if="arrangedItems.length === 0 && movingItem"
           class="listitem drop-zone h-12 bg-fuchsia-100"
         />

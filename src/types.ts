@@ -10,5 +10,6 @@ export type MovingItem<PayloadType> = {
   destination?: string | symbol;
   destinationList?: PayloadType[];
   targets: Array<string | symbol>;
+  originItemBoundingBox?: DOMRect;
   key: symbol;
 };
