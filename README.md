@@ -2,7 +2,9 @@
 
 Component library to drag and drop items across lists in Vue3.
 
-Comparable to, and inspired by, sortablejs, but unrelated and not even trying to use the same API. Focused on vertical lists, but I guess it should work in any direction.
+![showcase](./video/showcase1.gif)
+
+Comparable to, and inspired by, sortablejs, but unrelated.
 
 Features:
 
@@ -10,10 +12,9 @@ Features:
 - Dragging/dropping items from one list to another.
 - Smooth transitions using `TransitionGroup`
 - Fully customizable dragging element.
+- Drop zones, e.g. for trash bin.
 - Utility-class friendly
 - Completely built in Typescript. Supports generic items.
-
-![showcase](./video/showcase1.gif)
 
 ## Usage
 
