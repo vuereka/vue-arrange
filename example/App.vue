@@ -46,16 +46,53 @@ const addItem = ($event: InputEvent, done?: boolean) => {
 };
 
 const dropItem = (dropItem: MovingItem<ItemType>) => {
-  console.log(dropItem);
   if (!dropItem.destination) {
     return;
   }
+
   if (dropItem.destination === trashBin) {
-    listOptions.value.hoverTransition.leaveToClass = `scale-0`;
+    const trashBinBox = trashBinElement.value?.getBoundingClientRect();
+    console.log(trashBinBox);
+    listOptions.value.hoverTransition.leaveToClass = "scale-0";
+    // dropItem.hoverElement.value && (dropItem.hoverElement.value.style['transform'] = 'translate(-250px)')
+    if (dropItem.hoverElement.value) {
+      const hoverBox = dropItem.hoverElement.value.getBoundingClientRect();
+      dropItem.hoverElement.value.style["transition"] = "all 0.2s ease";
+      dropItem.hoverElement.value.style["top"] = `${
+        (trashBinBox.bottom -
+          trashBinBox.top -
+          hoverBox.bottom +
+          hoverBox.top) /
+          2 +
+        trashBinBox.top
+      }px`;
+      dropItem.hoverElement.value.style["left"] = `${
+        (trashBinBox.right -
+          trashBinBox.left -
+          hoverBox.right +
+          hoverBox.left) /
+          2 +
+        trashBinBox.left
+      }px`;
+    }
     database.value.splice(database.value.indexOf(dropItem.payload), 1);
     return;
   }
   listOptions.value.hoverTransition.leaveToClass = "scale-100 opacity-0";
+  if (dropItem.hoverElement.value) {
+    const hoverBox = dropItem.hoverElement.value.getBoundingClientRect();
+    dropItem.hoverElement.value.style["transition"] = "all 0.2s ease";
+    dropItem.hoverElement.value.style["top"] = `${
+      (trashBinBox.bottom - trashBinBox.top - hoverBox.bottom + hoverBox.top) /
+        2 +
+      trashBinBox.top
+    }px`;
+    dropItem.hoverElement.value.style["left"] = `${
+      (trashBinBox.right - trashBinBox.left - hoverBox.right + hoverBox.left) /
+        2 +
+      trashBinBox.left
+    }px`;
+  }
   const done = dropItem.destination === doneList ? true : false;
   if (dropItem.toIndex !== undefined) {
     dropItem.destinationList.forEach((item: ItemType, index: number) => {
@@ -76,9 +113,8 @@ const trashBinElement = ref<HTMLElement>();
 const listOptions = ref<ArrangeableOptions>({
   hoverClass: "opacity-70 cursor-grabbing drop-shadow-2xl scale-105",
   hoverTransition: {
-    leaveFromClass: "opacity-70",
-    leaveToClass: "opacity-0 scale-0",
-    leaveActiveClass: "transition-all duration-300 linear",
+    leaveFromClass: "opacity-70 scale-105",
+    leaveActiveClass: "transition-all duration-500 linear",
   },
   pickedItemClass: "invisible",
   listTransition: { name: "list-transition" },
@@ -142,13 +178,13 @@ const listOptions = ref<ArrangeableOptions>({
     </ArrangeableList>
   </div>
   <DropZone
-    ref="trashBinElement"
     :name="trashBin"
     :group="dropzones"
     v-slot="{ isHovering }"
     class="inline-block"
   >
     <div
+      ref="trashBinElement"
       class="flex h-32 w-32 items-center justify-center transition-all"
       :class="isHovering ? 'text-6xl' : 'text-5xl'"
     >

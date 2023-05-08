@@ -55,7 +55,11 @@ const enterZone = () => {
 </script>
 
 <template>
-  <PointerElement @pointer-leave="leaveZone" @pointer-enter="enterZone">
+  <PointerElement
+    @pointer-leave="leaveZone"
+    @pointer-enter="enterZone"
+    v-bind="$attrs"
+  >
     <slot
       :isHovering="movingItem?.destination === name"
       :class="movingItem?.destination === name ? options.hoverClass : ''"

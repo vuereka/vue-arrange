@@ -52,6 +52,9 @@ type KeyItem = {
 
 // eslint-disable-next-line no-undef
 const { movingItem, isMoving } = useMovingItem<PayloadType>();
+const hoverElement = ref<HTMLElement>();
+// Workaround for bug in VueTransition that does not allow to put a ref on a Transition
+const hoverElementRef = "hoverElement";
 const keyItemsList: Ref<KeyItem[] | undefined> = ref<KeyItem[]>();
 const arrangedItems = computed(
   () => keyItemsList.value?.map(({ payload }) => payload) || []
@@ -170,6 +173,7 @@ const liftItem = ($event: PointerEvent, { key, payload }: KeyItem) => {
   offsetY = pointer.y.value - targetBox.y;
   movingItem.value = {
     payload,
+    hoverElement,
     origin: props.name,
     originList: arrangedItems.value,
     destination: props.name,
@@ -240,13 +244,13 @@ onMounted(() => {
     </TransitionGroup>
     <Teleport to="body">
       <Transition
+        v-bind="{ ref: hoverElementRef, ...options.hoverTransition }"
         :style="{
           left: pointer.x.value - offsetX + 'px',
           top: pointer.y.value - offsetY + 'px',
         }"
         style="z-index: 100000000; position: fixed"
         :class="options.hoverClass"
-        v-bind="options.hoverTransition"
       >
         <slot
           v-if="movingItem && movingItem.origin === name"
