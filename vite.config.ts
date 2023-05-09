@@ -8,7 +8,8 @@ export default defineConfig(({ mode }) => {
     return {
       base: "./",
       build: {
-        outDir: "build",
+        emptyOutDir: true,
+        outDir: resolve(__dirname, "docs"),
       },
       plugins: [vue()],
     };

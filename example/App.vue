@@ -55,10 +55,9 @@ const dropItem = (dropItem: MovingItem<ItemType>) => {
   // 2. drop in the trash bin
   // 3. drop into a list
   // 4. drop into the dropzone of an empty list
-  const style = dropItem.hoverElement.value.style;
-  style.transition = "all 0.22s ease";
+  dropItem.hoverElement.value.style.transition = "all 0.22s ease";
   if (!dropItem.destination) {
-    Object.assign(style, {
+    Object.assign(dropItem.hoverElement.value.style, {
       opacity: 1,
       scale: 1,
       top: dropItem.originItemBoundingBox.top + "px", // N.b. does not account for scrolling
@@ -70,7 +69,7 @@ const dropItem = (dropItem: MovingItem<ItemType>) => {
     // transition styles:
     const binBox = trashBinElement.value.getBoundingClientRect();
     const hoverBox = dropItem.hoverElement.value.getBoundingClientRect();
-    Object.assign(style, {
+    Object.assign(dropItem.hoverElement.value.style, {
       top: `${(binBox.bottom + binBox.y - hoverBox.bottom + hoverBox.y) / 2}px`,
       left: `${(binBox.right + binBox.x - hoverBox.right + hoverBox.x) / 2}px`,
       scale: 0,
@@ -96,7 +95,7 @@ const dropItem = (dropItem: MovingItem<ItemType>) => {
     // logic:
     database.value[database.value.indexOf(dropItem.payload)].done = done;
   }
-  Object.assign(style, {
+  Object.assign(dropItem.hoverElement.value.style, {
     top: snapToBox.top + "px",
     left: snapToBox.left + "px",
     opacity: 1,
@@ -116,6 +115,9 @@ const doneDrop = ref<Element>();
 
 const listOptions = ref<ArrangeableOptions>({
   hoverClass: "opacity-70 cursor-grabbing drop-shadow-2xl scale-105",
+  hoverTransition: {
+    duration: 220,
+  },
   pickedItemClass: "invisible pickedItem",
   listTransition: { name: "list-transition" },
   handle: true,
