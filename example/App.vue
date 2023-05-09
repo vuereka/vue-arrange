@@ -114,10 +114,8 @@ const todoDrop = ref<Element>();
 const doneDrop = ref<Element>();
 
 const listOptions = ref<ArrangeableOptions>({
-  hoverClass: "opacity-70 cursor-grabbing drop-shadow-2xl scale-105",
-  hoverTransition: {
-    duration: 220,
-  },
+  hoverClass:
+    "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-105",
   pickedItemClass: "invisible pickedItem",
   listTransition: { name: "list-transition" },
   handle: true,
@@ -135,7 +133,7 @@ const listOptions = ref<ArrangeableOptions>({
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="listitem bg-teal-200 hover:drop-shadow-lg">
+        <div class="listitem bg-teal-200">
           <div name="handle" class="mr-2 cursor-grab">&#65049;</div>
           {{ item.description }}
         </div>
@@ -148,7 +146,7 @@ const listOptions = ref<ArrangeableOptions>({
         />
       </template>
       <template #after>
-        <div class="listitem bg-teal-200 hover:drop-shadow">
+        <div class="listitem bg-teal-200">
           <input
             @change="addItem($event as InputEvent)"
             placeholder="New item"
@@ -167,7 +165,7 @@ const listOptions = ref<ArrangeableOptions>({
       @drop-item="dropItem"
     >
       <template #default="{ item }">
-        <div class="listitem bg-fuchsia-200 hover:drop-shadow">
+        <div class="listitem bg-fuchsia-200">
           <div name="handle" class="mr-2 cursor-grab">&#65049;</div>
           {{ item.description }}
         </div>
