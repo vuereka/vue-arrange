@@ -1,8 +1,8 @@
 # Vue-arrange: Arrangeable lists for Vue3
 
-Component library to drag and drop items across lists in Vue3.
+Component library to drag and drop items across lists in Vue3. Try out [here](https://vuereka.github.io/vue-arrange/):
 
-![showcase](./video/showcase1.gif)
+[![showcase](./video/showcase1.gif)](https://vuereka.github.io/vue-arrange/)
 
 Comparable to, and inspired by, sortablejs, but unrelated.
 
