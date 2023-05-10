@@ -13,7 +13,7 @@ Features:
 - Supports using a handle.
 - Drop zones, e.g. for trash bin.
 - Utility-class friendly
-- Completely built in Typescript. Supports generic items.
+- Completely built in Typescript. Supports generic items. (Javascript users can live happily omitting all the type references below (the things between <>), but it is still useful to know what is being returned by events etc.) 
 
 ## Usage
 
@@ -28,25 +28,13 @@ npm add vue-arrange
 - clone the package
 - `npm i; npm run dev`
 
-# Functional Description
+## Exports:
+### Component `ArrangeableList`
 
-## Component `ArrangeableList`
+#### **Props:**
+See [ArrangeableProps](#type-arrangeablepropspayloadtype) below
 
-### **Props:**
-
-- `list`: object[]. The elements in the list. Should be distinct objects, and not primitive types, to avoid messing up with duplicates.
-- `name`: string/symbol. Optional. Needs to be unique between
-  lists. Is to reference where things are coming from or going to.
-- `group`: string/symbol. Optional. Within the same group of ArrangeableLists objects can be moved freely.
-- `targets`: string/symbol/array of such. Optional. Lists which names/groups can receive items from this ArrangeableList.
-- `options`:
-  - `hoverClass`: string. Optional. The class/classes of the 'copied' item you drag with the pointer.
-  - `pickedItemClass`: string. Optional. The class/classes of the item you are dragging as it shows in the lists before it is dropped.
-  - `unpickedItemClass`: string. Optional. The class/classes of the items that are not being dragged.
-  - `transitionName`: string. Optional. Under the hood this uses Vue TransitionGroups. Put the name of the class-prefix for the transition here. See <https://vuejs.org/guide/built-ins/transition-group.html#move-transitions>
-  - `handle`: boolean. Optional, defaults to false. If true, only elements within the template with attribute `name` set to `handle` can be used to move the item.
-
-### **Slots:**
+#### **Slots:**
 
 - `#before`: template to display something before the list of items.
   - Props:
@@ -59,27 +47,27 @@ npm add vue-arrange
   - Props:
     - `arrangedItems`: the list of items as it is rendered now.
 
-### **Emits:**
+#### **Events emitted:**
 
-- `liftItem`: fired when an item is being picked up out of this list. Payload: `MovingType`.
-- `dropItem`: fired when an item from this is dropped somewhere. Payload: `Movingtype`.
+- `liftItem`: fired when an item is being picked up out of this list. Payload: `MovingItem`.
+- `dropItem`: fired when an item from this is dropped somewhere. Payload: `MovingItem`.
 
-### **Notes**
+#### **Notes**
 
-- The consumer needs to take care that the list prop gets stored/updated upon `dropItem` event, otherwise it the list will reset to its original position on the next re-render phase.
-- Can be customized using options (see ArrangeableOptions below).
-- class options can take any list of (utility) classes like they would be normally passed to a component. Tailwind works perfectly for example. They are empty by default.
-- There is no default transition, this needs to be provided by the consumer.
-- by default, items can only be moved within the same list.
-  - By adding a `group` (see options below), items can be moved between different lists with the same group name.
-  - By adding one or more `targets` (see options below), items can be made to move only to lists with `name` or `group` listed in `targets`.
+- The consumer needs to take care that the list prop gets stored/updated upon `dropItem` event, otherwise it the list will reset to its original position on the next re-render phase. This is can be done using the dropItem event, which carries a [MovingItem](#type-movingitempayloadtype) argument with all the required information.
+- Can be customized using options (see [below](#type-arrangeableoptions)).
+  - class options can take any list of (utility) classes like they would be normally passed to a component. Tailwind works perfectly for example. They are empty by default.
+  - There is no default transition for the list, this needs to be provided by the consumer (if desired) with the listTransition option.
+  - by default, items can only be moved within the same list.
+    - By adding a `group` (see [options](#type-arrangeableoptions) below), items can be moved between different lists with the same group name.
+    - By adding one or more `targets` (see [options](#type-arrangeableoptions) below), items can be made to move only to lists with `name` or `group` listed in `targets`.
 - It can be used both by touch devices, mouse and any other type of pointer, as it uses PointerEvents. To be able to do this, it puts `touch-action: 'none'` css class on the entire document.
 
-### **Example**
+#### **Example**
 
-See [example folder](./example/) for working example using tailwindcss.
+See [example folder](./example/) for example using tailwindcss.
 
-## Composable `useMovingItem<PayloadType>()`
+### Composable `useMovingItem<PayloadType>()`
 
 Exposes:
 
@@ -89,8 +77,9 @@ Exposes:
 ```typescript
 const { movingItem, isMoving } = useMovingItem<MyObjectType>();
 ```
+### Types
 
-## Type `MovingItem<PayloadType>`
+#### `MovingItem<PayloadType>`
 
 Information about what is/was being dragged/dropped.
 
@@ -109,7 +98,7 @@ type MovingItem<PayloadType> = {
 };
 ```
 
-## type `ArrangeableOptions`
+#### `ArrangeableOptions`
 
 options to pass to the arrangeable list.
 
@@ -124,7 +113,7 @@ type ArrangeableOptions = {
 };
 ```
 
-## type `ArrangeableProps<PayloadType`
+#### `ArrangeableProps<PayloadType>`
 
 props object for arrangeable list
 
