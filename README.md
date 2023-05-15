@@ -67,60 +67,65 @@ See [ArrangeableProps](#type-arrangeablepropspayloadtype) below
 
 #### **Example**
 
-Simple example using tailwind classes
+Simple example without typescript.
 
 ```vue
 <script setup>
 import { ref } from "vue";
 import { ArrangeableList } from "vue-arrange";
-const items = ref([
-  { title: "stone", color: "bg-stone-200" },
-  { title: "red", color: "bg-red-200" },
-  { title: "amber", color: "bg-amber-200" },
-  { title: "cyan", color: "bg-cyan-200" },
-  { title: "lime", color: "bg-lime-200" },
+const twColors = ref([
+  { title: "stone", color: "background-color: rgb(231 229 228);" },
+  { title: "red", color: "background-color: rgb(254 202 202);" },
+  { title: "amber", color: "background-color: rgb(253 230 138);" },
+  { title: "cyan", color: "background-color: rgb(165 243 252);" },
+  { title: "lime", color: "background-color: rgb(217 249 157);" },
+  { title: "fuchsia", color: "background-color: rgb(245 208 254);" },
 ]);
 
 const dropItem = ({ destinationList }) => {
-  if (destinationList) items.value = destinationList;
+  twColors.value = destinationList;
 };
 </script>
 
 <template>
-  <h1>Some tailwind colors:</h1>
   <ArrangeableList
-    :list="items"
+    :list="twColors"
     :options="{
       pickedItemClass: 'invisible',
-      hoverClass: 'opacity-70',
+      hoverClass: 'hover',
       listTransition: { name: 'list-transition' },
     }"
     @drop-item="dropItem"
     v-slot="{ item }"
   >
     <div
-      class="m-2 flex h-10 w-60 items-center rounded-md pl-2"
-      :class="item.color"
+      style="margin: 8px;padding: 8px;height: 40px;width: 160px;border-radius: 8px;"
+      :style="item.color"
     >
       {{ item.title }}
     </div>
   </ArrangeableList>
-  <ttemplate>
-    <style>
-      .list-transition-move,
-      .list-transition-enter-active,
-      .list-transition-leave-active {
-        transition: all 0.2s ease;
-      }
-      .list-transition-leave-active {
-        position: absolute;
-      }
-    </style></ttemplate
-  >
 </template>
+
+<style>
+.invisible {
+  visibility: hidden;
+}
+.hover {
+  opacity: 0.65;
+}
+.list-transition-move,
+.list-transition-enter-active,
+.list-transition-leave-active {
+  transition: all 0.2s ease;
+}
+.list-transition-leave-active {
+  position: absolute;
+}
+</style>
 ```
 
-See [example folder](./example/) for example using tailwindcss.
+See [example folder](./example/) for a complete example using typescript and tailwindcss.
 
 ### Composable `useMovingItem<PayloadType>()`
 
