@@ -13,7 +13,7 @@ Features:
 - Supports using a handle.
 - Drop zones, e.g. for trash bin.
 - Utility-class friendly
-- Completely built in Typescript. Supports generic items. (Javascript users can live happily omitting all the type references below (the things between <>), but it is still useful to know what is being returned by events etc.) 
+- Completely built in Typescript. Supports generic items. (Javascript users can live happily omitting all the type references below (the things between <>), but it is still useful to know what is being returned by events etc.)
 
 ## Usage
 
@@ -29,9 +29,11 @@ npm add vue-arrange
 - `npm i; npm run dev`
 
 ## Exports:
+
 ### Component `ArrangeableList`
 
 #### **Props:**
+
 See [ArrangeableProps](#type-arrangeablepropspayloadtype) below
 
 #### **Slots:**
@@ -65,6 +67,106 @@ See [ArrangeableProps](#type-arrangeablepropspayloadtype) below
 
 #### **Example**
 
+Simple example using tailwind classes
+
+```vue
+<script setup>
+import { ref } from "vue";
+import { ArrangeableList } from "vue-arrange";
+const items = ref([
+  { title: "stone", color: "bg-stone-200" },
+  { title: "red", color: "bg-red-200" },
+  { title: "amber", color: "bg-amber-200" },
+  { title: "cyan", color: "bg-cyan-200" },
+  { title: "lime", color: "bg-lime-200" },
+]);
+
+const dropItem = ({ destinationList }) => {
+  if (destinationList) items.value = destinationList;
+};
+</script>
+
+<template>
+  <script setup>
+    import { ref } from "vue";
+    import { ArrangeableList } from "vue-arrange";
+    const items = ref([
+      { title: "stone", color: "bg-stone-200" },
+      { title: "red", color: "bg-red-200" },
+      { title: "amber", color: "bg-amber-200" },
+      { title: "cyan", color: "bg-cyan-200" },
+      { title: "lime", color: "bg-lime-200" },
+    ]);
+
+    const dropItem = ({ destinationList }) => {
+      items.value = destinationList;
+    };
+  </script>
+
+  <template>
+    <h1>Some tailwind colors:</h1>
+    <ArrangeableList
+      :list="items"
+      :options="{
+        pickedItemClass: 'invisible',
+        hoverClass: 'opacity-70',
+        listTransition: { name: 'list-transition' },
+      }"
+      @drop-item="dropItem"
+      v-slot="{ item }"
+    >
+      <div
+        class="m-2 flex h-10 w-60 items-center rounded-md pl-2"
+        :class="item.color"
+      >
+        {{ item.title }}
+      </div>
+    </ArrangeableList>
+  </template>
+
+  <style>
+    .list-transition-move,
+    .list-transition-enter-active,
+    .list-transition-leave-active {
+      transition: all 0.2s ease;
+    }
+    .list-transition-leave-active {
+      position: absolute;
+    }
+  </style>
+  <h1>Some tailwind colors:</h1>
+  <ArrangeableList
+    :list="items"
+    :options="{
+      pickedItemClass: 'invisible',
+      hoverClass: 'opacity-70',
+      listTransition: { name: 'list-transition' },
+    }"
+    @drop-item="dropItem"
+    v-slot="{ item }"
+  >
+    <div
+      class="m-2 flex h-10 w-60 items-center rounded-md pl-2"
+      :class="item.color"
+    >
+      {{ item.title }}
+    </div>
+  </ArrangeableList>
+  <ttemplate>
+    <style>
+      .list-transition-move,
+      .list-transition-enter-active,
+      .list-transition-leave-active {
+        transition: all 0.2s ease;
+      }
+      .list-transition-leave-active {
+        position: absolute;
+      }
+    </style></ttemplate
+  >
+</template>
+```
+
 See [example folder](./example/) for example using tailwindcss.
 
 ### Composable `useMovingItem<PayloadType>()`
@@ -77,6 +179,7 @@ Exposes:
 ```typescript
 const { movingItem, isMoving } = useMovingItem<MyObjectType>();
 ```
+
 ### Types
 
 #### `MovingItem<PayloadType>`
