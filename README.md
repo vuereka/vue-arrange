@@ -87,53 +87,6 @@ const dropItem = ({ destinationList }) => {
 </script>
 
 <template>
-  <script setup>
-    import { ref } from "vue";
-    import { ArrangeableList } from "vue-arrange";
-    const items = ref([
-      { title: "stone", color: "bg-stone-200" },
-      { title: "red", color: "bg-red-200" },
-      { title: "amber", color: "bg-amber-200" },
-      { title: "cyan", color: "bg-cyan-200" },
-      { title: "lime", color: "bg-lime-200" },
-    ]);
-
-    const dropItem = ({ destinationList }) => {
-      items.value = destinationList;
-    };
-  </script>
-
-  <template>
-    <h1>Some tailwind colors:</h1>
-    <ArrangeableList
-      :list="items"
-      :options="{
-        pickedItemClass: 'invisible',
-        hoverClass: 'opacity-70',
-        listTransition: { name: 'list-transition' },
-      }"
-      @drop-item="dropItem"
-      v-slot="{ item }"
-    >
-      <div
-        class="m-2 flex h-10 w-60 items-center rounded-md pl-2"
-        :class="item.color"
-      >
-        {{ item.title }}
-      </div>
-    </ArrangeableList>
-  </template>
-
-  <style>
-    .list-transition-move,
-    .list-transition-enter-active,
-    .list-transition-leave-active {
-      transition: all 0.2s ease;
-    }
-    .list-transition-leave-active {
-      position: absolute;
-    }
-  </style>
   <h1>Some tailwind colors:</h1>
   <ArrangeableList
     :list="items"
