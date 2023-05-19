@@ -74,12 +74,23 @@ Simple example without typescript.
 import { ref } from "vue";
 import { ArrangeableList } from "vue-arrange";
 const twColors = ref([
-  { title: "stone", color: "background-color: rgb(231 229 228);" },
-  { title: "red", color: "background-color: rgb(254 202 202);" },
-  { title: "amber", color: "background-color: rgb(253 230 138);" },
-  { title: "cyan", color: "background-color: rgb(165 243 252);" },
-  { title: "lime", color: "background-color: rgb(217 249 157);" },
-  { title: "fuchsia", color: "background-color: rgb(245 208 254);" },
+  { name: "red", color: "#fecaca" },
+  { name: "orange", color: "#fed7aa" },
+  { name: "amber", color: "#fde68a" },
+  { name: "yellow", color: "#fef08a" },
+  { name: "lime", color: "#d9f99d" },
+  { name: "green", color: "#bbf7d0" },
+  { name: "emerald", color: "#a7f3d0" },
+  { name: "teal", color: "#99f6e4" },
+  { name: "cyan", color: "#a5f3fc" },
+  { name: "sky", color: "#bae6fd" },
+  { name: "blue", color: "#bfdbfe" },
+  { name: "indigo", color: "#c7d2fe" },
+  { name: "violet", color: "#ddd6fe" },
+  { name: "purple", color: "#e9d5ff" },
+  { name: "fuchsia", color: "#f5d0fe" },
+  { name: "pink", color: "#fbcfe8" },
+  { name: "rose", color: "#fecdd3" },
 ]);
 
 const dropItem = ({ destinationList }) => {
@@ -102,7 +113,7 @@ const dropItem = ({ destinationList }) => {
       style="margin: 8px;padding: 8px;height: 40px;width: 160px;border-radius: 8px;"
       :style="item.color"
     >
-      {{ item.title }}
+      {{ item.name }}
     </div>
   </ArrangeableList>
 </template>
@@ -145,15 +156,16 @@ const { movingItem, isMoving } = useMovingItem<MyObjectType>();
 Information about what is/was being dragged/dropped.
 
 ```typescript
-type MovingItem<PayloadType> = {
-  payload: PayloadType; // The item object being moved. PayloadType is a generic object
+type MovingItem<PayloadType extends object> = {
+  // PayloadType is the generic type used by ArrangeableList.
+  payload: PayloadType; // The item object being moved.
   hoverElement?: Ref<HTMLElement>; // the element ref of the hovering item.
   fromIndex: number; // the 0-based list-index where it was picked up.
   origin: string | symbol; // the name of the list from which it was picked up.
-  originList: PayloadType[]; // the arranged items-list from where the item came as it appears now.
-  toIndex?: number; // the 0-based list-index where the item is hovering or being dropped.
-  destination?: string | symbol; // the name of the list where it is hovering over or being dropped.
-  destinationList?: PayloadType[]; // the arranged items-list where the item is hovering over or being dropped as it appears now.
+  originList: PayloadType[]; // the arranged items-list where the item came from
+  toIndex?: number; // the 0-based list-index where the item is hovering or dropped.
+  destination?: string | symbol; // the name of the list where it is hovering or dropped.
+  destinationList?: PayloadType[]; // the arranged items-list where the item is hovering over or being dropped
   originItemBoundingBox?: DOMRect; // the bounding box of the original location of the picked item.
   targets: Array<string | symbol>; // the names/groups of the lists where this item can be dropped.
 };
@@ -169,7 +181,6 @@ type ArrangeableOptions = {
   pickedItemClass?: string; // class or classes to place on the original of the element in the list that is being picked up. Typically: 'invisible' or something like this.
   unpickedItemClass?: string; // class or classes to place on the items that are _not_ being picked up
   listTransition?: TransitionProps; // Transition props for the list, dictating how moving, removing and adding items to the list looks. See: Vue TransitionGroup documentation.
-  hoverTransition?: TransitionProps; // Transition props for the hovered element. See: Vue Transition docuemntation.
   handle?: boolean; // indicate if the elements should be only dragged using a handle. If so, any descendant elements with attribute: 'name="handle"' are used as a handle.
 };
 ```
@@ -179,10 +190,12 @@ type ArrangeableOptions = {
 props object for arrangeable list
 
 ```typescript
-type ArrangeableProps<PayloadType> = {
+type ArrangeableProps<PayloadType extends object> = {
+  // PayloadType is the generic type used by ArrangeableList.
   options?: ArrangeableOptions; // See above
-  list: PayloadType[]; // items passed to the list. PayloadType is the generic object type used by ArrangeableList.
-  name?: symbol | string; // unique name of the list. Defaults to an unnamed symbol. Advised is to use a named symbol.
+  list: PayloadType[]; // list of items passed to the ArrangeableList.
+  listKey?: string; // in template: 'list-key'; key of PayloadType, needs to be unique within list. (Only necessary if list items are reassigned in place.)
+  name?: symbol | string; // unique name of the list. Defaults to an unnamed symbol which gets exposed. Advised is to use a named symbol.
   group?: string | symbol; // group of the list. Items can be arbitrarily moved across member lists of this group.
   targets?: string | symbol | Array<string | symbol>; // By supplying one or more targets, items from this list can only be moved to other groups/lists named in 'targets' (using the name/group).
 };
