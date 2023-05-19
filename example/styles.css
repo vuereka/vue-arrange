@@ -9,7 +9,7 @@
 .list-transition-move,
 .list-transition-enter-active,
 .list-transition-leave-active {
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .list-transition-enter-from,

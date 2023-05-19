@@ -91,33 +91,35 @@ const reset = () => {
 </script>
 
 <template>
-  <main class="overflow-auto">
-    <h1 class="m-2">Tailwind colors sorting game:</h1>
-    <button
-      @click="shuffle"
-      class="m-2 rounded-lg border-2 border-black bg-neutral-300 p-2 active:translate-y-0.5"
-    >
-      shuffle
-    </button>
-    <button
-      @click="reset"
-      class="m-2 rounded-lg border-2 border-black bg-neutral-300 p-2 active:translate-y-0.5"
-    >
-      reset
-    </button>
+  <main class="flex flex-col items-center overflow-auto">
+    <h1 class="m-2 text-xl font-extrabold">Color sorting game:</h1>
+    <div>
+      <button
+        @click="shuffle"
+        class="m-2 rounded-lg border-2 border-stone-400 bg-stone-200 p-2 hover:drop-shadow-lg active:translate-y-0.5"
+      >
+        shuffle
+      </button>
+      <button
+        @click="reset"
+        class="m-2 rounded-lg border-2 border-stone-400 bg-stone-200 p-2 hover:drop-shadow-lg active:translate-y-0.5"
+      >
+        reset
+      </button>
+    </div>
     <ArrangeableList
       :list="items"
       list-key="color"
       :options="{
         pickedItemClass: 'invisible',
-        hoverClass: 'opacity-70',
+        hoverClass: 'opacity-70 cursor-grabbing',
         listTransition: { name: 'list-transition' },
       }"
       @drop-item="dropItem"
       v-slot="{ item }"
     >
       <div
-        class="m-2 h-10 w-40 rounded-lg p-2"
+        class="m-2 flex h-10 w-96 cursor-grab justify-center rounded-lg p-2"
         :style="{ backgroundColor: item.color }"
       >
         {{ item.name }}
