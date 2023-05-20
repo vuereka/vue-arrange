@@ -86,7 +86,7 @@ const emit = defineEmits<{
 }>();
 
 /**
- *
+ * triggered when the mouse cursor enters a list item while dragging something.
  * @param index: index of the item hovered over.
  */
 const hoverOverItem = (index: number) => {
@@ -241,6 +241,7 @@ onMounted(() => {
     </TransitionGroup>
     <Teleport to="body">
       <div
+        v-if="movingItem && movingItem.origin === name"
         ref="hoverElement"
         :style="{
           left: pointer.x.value - offsetX + 'px',
@@ -249,10 +250,7 @@ onMounted(() => {
         style="z-index: 100000000; position: fixed"
         :class="options.hoverClass"
       >
-        <slot
-          v-if="movingItem && movingItem.origin === name"
-          :item="movingItem.payload"
-        />
+        <slot :item="movingItem.payload" />
       </div>
     </Teleport>
   </PointerElement>

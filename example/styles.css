@@ -12,10 +12,6 @@
   transition: all 0.25s ease;
 }
 
-.list-transition-enter-from,
-.list-transition-leave-to {
-  opacity: 0;
-}
 .list-transition-leave-active {
   position: absolute;
 }

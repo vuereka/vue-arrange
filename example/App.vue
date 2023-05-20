@@ -3,7 +3,7 @@ import { ref, shallowRef } from "vue";
 import ColorSorting from "./ColorSorting.vue";
 import TodoList from "./TodoList.vue";
 
-const selection = shallowRef(ColorSorting);
+const selection = shallowRef(TodoList);
 const options = [
   {
     title: "Color Sorting Game",
