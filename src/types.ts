@@ -1,15 +1,19 @@
 import { Ref } from "vue";
 
+export type DropTargetIdentifier = string | number | symbol;
+export type DropTarget<PayloadType> = {
+  id: DropTargetIdentifier;
+  type: "list" | "dropzone";
+  listItems?: PayloadType[];
+  index?: number;
+  meta?: any;
+};
+
 export type MovingItem<PayloadType> = {
   payload: PayloadType;
   hoverElement?: Ref<HTMLElement | undefined>;
-  fromIndex: number;
-  origin: string | symbol;
-  originList: PayloadType[];
-  toIndex?: number;
-  destination?: string | symbol;
-  destinationList?: PayloadType[];
-  targets: Array<string | symbol>;
-  originItemBoundingBox?: DOMRect;
+  origin: DropTarget<PayloadType>;
+  destination?: DropTarget<PayloadType>;
+  dropTargets: Array<DropTargetIdentifier>;
   key: symbol;
 };

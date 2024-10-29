@@ -2,7 +2,7 @@
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
 import { type MovingItem } from "./types";
-import { toRaw } from "vue";
+import { ref, toRaw } from "vue";
 
 type ArrangeableOptions = {
   hoverClass?: string;
@@ -10,32 +10,27 @@ type ArrangeableOptions = {
 
 type Props = {
   options?: ArrangeableOptions;
-  //  FIXME: once eslint-vue-typescript plugin supports generics, remove all these no-undef lines.
-  // eslint-disable-next-line no-undef
   name?: symbol | string;
   group?: string | symbol;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  // eslint-disable-next-line vue/require-valid-default-prop
   name: Symbol(),
   options: () => ({
     hoverClass: "",
   }),
 });
 
-// eslint-disable-next-line no-undef
 const { movingItem } = useMovingItem<PayloadType>();
+const dropZone = ref<HTMLElement>();
 
 const emit = defineEmits<{
-  // eslint-disable-next-line no-undef
   (e: "enterZone", item: MovingItem<PayloadType>): void;
-  // eslint-disable-next-line no-undef
   (e: "leaveZone", item: MovingItem<PayloadType>): void;
 }>();
 
 const leaveZone = () => {
-  if (movingItem.value?.destination === props.name) {
+  if (movingItem.value?.destination?.id === props.name) {
     movingItem.value.destination = undefined;
     emit("leaveZone", toRaw(movingItem.value));
   }
@@ -44,11 +39,14 @@ const leaveZone = () => {
 const enterZone = () => {
   if (
     movingItem.value &&
-    movingItem.value.destination !== props.name &&
-    (movingItem.value.targets.includes(props.name) ||
-      (props.group && movingItem.value.targets.includes(props.group)))
+    movingItem.value.destination?.id !== props.name &&
+    (movingItem.value.dropTargets.includes(props.name) ||
+      (props.group && movingItem.value.dropTargets.includes(props.group)))
   ) {
-    movingItem.value.destination = props.name;
+    movingItem.value.destination = {
+      id: props.name,
+      type: "dropzone",
+    };
     emit("enterZone", toRaw(movingItem.value));
   }
 };
@@ -58,11 +56,19 @@ const enterZone = () => {
   <PointerElement
     @pointer-leave="leaveZone"
     @pointer-enter="enterZone"
+    :id="
+      movingItem?.destination?.id === props.name
+        ? 'arrangeable-list-target-element'
+        : undefined
+    "
     v-bind="$attrs"
+    ref="dropZone"
   >
     <slot
-      :isHovering="movingItem?.destination === name"
-      :class="movingItem?.destination === name ? options.hoverClass : ''"
+      :isHovering="movingItem?.destination?.id === props.name"
+      :class="
+        movingItem?.destination?.id === props.name ? options.hoverClass : ''
+      "
     />
   </PointerElement>
 </template>

@@ -20,8 +20,8 @@ const isInside = computed<boolean>(() => {
 });
 
 const emit = defineEmits<{
-  (e: "pointer-enter"): void;
-  (e: "pointer-leave"): void;
+  (e: "pointer-enter", target: HTMLElement): void;
+  (e: "pointer-leave", target: HTMLElement): void;
 }>();
 
 defineExpose({
@@ -31,9 +31,9 @@ defineExpose({
 onMounted(() => {
   watch(isInside, (afterInside, beforeInside) => {
     if (afterInside && !beforeInside) {
-      emit("pointer-enter");
+      emit("pointer-enter", PointerElement.value as HTMLElement);
     } else if (beforeInside && !afterInside) {
-      emit("pointer-leave");
+      emit("pointer-leave", PointerElement.value as HTMLElement);
     }
   });
 });

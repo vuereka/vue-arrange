@@ -180,8 +180,8 @@ type ArrangeableOptions = {
   hoverClass?: string; // class or classes to place on the element that is being dragged by the user
   pickedItemClass?: string; // class or classes to place on the original of the element in the list that is being picked up. Typically: 'invisible' or something like this.
   unpickedItemClass?: string; // class or classes to place on the items that are _not_ being picked up
-  listTransition?: TransitionProps; // Transition props for the list, dictating how moving, removing and adding items to the list looks. See: Vue TransitionGroup documentation.
-  handle?: boolean; // indicate if the elements should be only dragged using a handle. If so, any descendant elements with attribute: 'name="handle"' are used as a handle.
+  listTransition?: TransitionGroupProps; // Transition props for the list, dictating how moving, removing and adding items to the list looks. See: Vue TransitionGroup API documentation: https://vuejs.org/api/built-in-components.html#transitiongroup
+  handle?: boolean | string; // indicate if the elements should be only dragged using a handle. If so, any descendant elements with attribute: 'name="handle"' are used as a handle. If a string is given, the name should be set to that string.
 };
 ```
 
@@ -195,7 +195,7 @@ type ArrangeableProps<PayloadType extends object> = {
   options?: ArrangeableOptions; // See above
   list: PayloadType[]; // list of items passed to the ArrangeableList.
   listKey?: string; // in template: 'list-key'; key of PayloadType, needs to be unique within list. (Only necessary if list items are reassigned in place.)
-  name?: symbol | string; // unique name of the list. Defaults to an unnamed symbol which gets exposed. Advised is to use a named symbol.
+  name?: symbol | string; // unique name of the list. Defaults to an unnamed symbol which gets exposed.
   group?: string | symbol; // group of the list. Items can be arbitrarily moved across member lists of this group.
   targets?: string | symbol | Array<string | symbol>; // By supplying one or more targets, items from this list can only be moved to other groups/lists named in 'targets' (using the name/group).
 };

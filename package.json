@@ -1,7 +1,7 @@
 {
   "name": "vue-arrange",
   "private": false,
-  "version": "0.5.0",
+  "version": "1.0.0",
   "author": "Frido Emans",
   "license": "MIT",
   "homepage": "https://github.com/vuereka/vue-arrange",
@@ -32,7 +32,8 @@
   "exports": {
     ".": {
       "import": "./dist/vue-arrange.es.js",
-      "require": "./dist/vue-arrange.umd.cjs"
+      "require": "./dist/vue-arrange.umd.cjs",
+      "types": "./dist/index.d.ts"
     }
   },
   "types": "./dist/index.d.ts",

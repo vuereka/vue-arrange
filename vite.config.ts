@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
         outDir: resolve(__dirname, "docs"),
       },
       plugins: [vue()],
+      css: {
+        postcss: resolve(__dirname, "example/postcss.config.js"),
+      },
     };
   } else
     return {
