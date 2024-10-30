@@ -8,12 +8,10 @@ import {
   ArrangeableOptions,
 } from "../../src";
 import { DropTargetIdentifier } from "../../src/types";
+import tailwindColors from "tailwindcss/colors";
 
 type ItemType = { description: string };
 const { movingItem } = useMovingItem<ItemType>();
-
-const todoList = Symbol("To do");
-const doneList = Symbol("Done");
 
 const data = [
   "Build app",
@@ -30,18 +28,24 @@ type ListType = {
   dropZone: Ref<Element | undefined>;
   color: string;
 };
+
+const colors = Object.entries(tailwindColors).slice(10, 27);
+const randomColor = () => {
+  return colors[Math.floor(Math.random() * colors.length)][1];
+};
+
 const lists = ref<ListType[]>([
   {
     name: "To do:",
     items: data.map((description) => ({ description })) as ItemType[],
     dropZone: ref<Element>(),
-    color: "bg-teal-100",
+    color: randomColor(),
   },
   {
     name: "Done:",
     items: [] as ItemType[],
     dropZone: ref<Element>(),
-    color: "bg-fuchsia-100",
+    color: randomColor(),
   },
 ]);
 
@@ -65,8 +69,8 @@ const dropItem = (item: MovingItem<ItemType>) => {
   if (item.destination === undefined) {
     return;
   }
-  if (item.destination.id === trashBin) {
-    lists.value[item.origin.id].items.splice(item.origin.index, 1);
+  if (item.destination.identifier === trashBin) {
+    lists.value[item.origin.identifier].items.splice(item.origin.index, 1);
     return;
   }
   // else, (if there is a target, and it is not the trash bin)
@@ -92,22 +96,22 @@ const trashBin = Symbol("Trash bin");
 
 const trashBinElement = ref<Element>();
 
-const listOptions = computed<ArrangeableOptions>(() => {
-  let dropClass =
-    movingItem.value?.destination?.id === trashBin
-      ? "!scale-0 !top-[var(--landingzone-top)] !left-[--landingzone-left] !opacity-100"
-      : "!top-[var(--landingzone-top)] !left-[var(--landingzone-left)] !opacity-100 !scale-100 drop-shadow-none";
-
-  return {
-    hoverClass:
-      "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-105",
-    transitionClass: "transition-all ease-in-out duration-300",
-    dropClass: dropClass,
-    pickedItemClass: "invisible",
-    listTransition: { name: "list-transition" },
-    handle: "grabHandle",
-  };
-});
+const listOptions = {
+  hoverClass:
+    "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-110",
+  pickedItemClass: "invisible",
+  hoverTransition: {
+    enterFromClass: "!opacity-100 !scale-100 drop-shadow-none",
+    enterActiveClass:
+      "transition-opacity transition-shadow transition-transform",
+  },
+  listTransition: {
+    moveClass: "transition-all",
+    // necessary for the list to move smoothly:
+    leaveActiveClass: "absolute",
+  },
+  handle: "grabHandle",
+};
 </script>
 
 <template>
@@ -116,6 +120,7 @@ const listOptions = computed<ArrangeableOptions>(() => {
       class="list"
       v-for="(list, listIdentifier) in lists"
       :key="listIdentifier"
+      :style="{ backgroundColor: list.color[100] }"
     >
       <div class="header">
         <input
@@ -126,13 +131,19 @@ const listOptions = computed<ArrangeableOptions>(() => {
       </div>
       <ArrangeableList
         :list="list.items as ItemType[]"
-        :id="listIdentifier"
+        :identifier="listIdentifier"
         :group="dropzones"
-        :options="listOptions"
+        :options="{
+          ...listOptions,
+          dropClass:
+            movingItem?.destination?.identifier === trashBin
+              ? 'transition-all scale-0 opacity-100 !top-[var(--landingzone-top)] !left-[var(--landingzone-left)] '
+              : 'transition-all opacity-100 scale-100 drop-shadow-none !top-[var(--landingzone-top)] !left-[var(--landingzone-left)]',
+        }"
         @drop-item="dropItem"
       >
         <template #default="{ item }">
-          <div class="listitem" :class="list.color">
+          <div class="listitem" :style="{ backgroundColor: list.color[300] }">
             <div name="grabHandle" class="mr-2 cursor-grab">&#65049;</div>
             {{ item.description }}
           </div>
@@ -142,11 +153,11 @@ const listOptions = computed<ArrangeableOptions>(() => {
             ref="list.dropZone"
             v-if="arrangedItems.length === 0 && movingItem"
             class="drop-zone listitem h-12"
-            :class="list.color"
+            :style="{ backgroundColor: list.color[200] }"
           />
         </template>
         <template #after>
-          <div class="listitem" :class="list.color">
+          <div class="listitem" :style="{ backgroundColor: list.color[200] }">
             <input
               @change="addItem($event as InputEvent, listIdentifier)"
               placeholder="New item"
@@ -156,7 +167,7 @@ const listOptions = computed<ArrangeableOptions>(() => {
       </ArrangeableList>
     </div>
     <DropZone
-      :name="trashBin"
+      :identifier="trashBin"
       :group="dropzones"
       v-slot="{ isHovering }"
       class="inline-block"

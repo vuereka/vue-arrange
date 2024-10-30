@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
-import { type MovingItem } from "./types";
+import { DropTargetIdentifier, type MovingItem } from "./types";
 import { ref, toRaw } from "vue";
 
 type ArrangeableOptions = {
@@ -10,12 +10,12 @@ type ArrangeableOptions = {
 
 type Props = {
   options?: ArrangeableOptions;
-  name?: symbol | string;
-  group?: string | symbol;
+  identifier: DropTargetIdentifier;
+  group?: DropTargetIdentifier;
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  name: Symbol(),
+  identifier: Symbol(),
   options: () => ({
     hoverClass: "",
   }),
@@ -30,7 +30,7 @@ const emit = defineEmits<{
 }>();
 
 const leaveZone = () => {
-  if (movingItem.value?.destination?.id === props.name) {
+  if (movingItem.value?.destination?.identifier === props.identifier) {
     movingItem.value.destination = undefined;
     emit("leaveZone", toRaw(movingItem.value));
   }
@@ -39,14 +39,16 @@ const leaveZone = () => {
 const enterZone = () => {
   if (
     movingItem.value &&
-    movingItem.value.destination?.id !== props.name &&
-    (movingItem.value.dropTargets.includes(props.name) ||
+    movingItem.value.destination?.identifier !== props.identifier &&
+    (movingItem.value.dropTargets.includes(props.identifier) ||
       (props.group && movingItem.value.dropTargets.includes(props.group)))
   ) {
     movingItem.value.destination = {
-      id: props.name,
+      identifier: props.identifier,
+      group: props.group,
       type: "dropzone",
     };
+
     emit("enterZone", toRaw(movingItem.value));
   }
 };
@@ -57,7 +59,7 @@ const enterZone = () => {
     @pointer-leave="leaveZone"
     @pointer-enter="enterZone"
     :id="
-      movingItem?.destination?.id === props.name
+      movingItem?.destination?.identifier === props.identifier
         ? 'arrangeable-list-target-element'
         : undefined
     "
@@ -65,9 +67,11 @@ const enterZone = () => {
     ref="dropZone"
   >
     <slot
-      :isHovering="movingItem?.destination?.id === props.name"
+      :isHovering="movingItem?.destination?.identifier === props.identifier"
       :class="
-        movingItem?.destination?.id === props.name ? options.hoverClass : ''
+        movingItem?.destination?.identifier === props.identifier
+          ? options.hoverClass
+          : ''
       "
     />
   </PointerElement>

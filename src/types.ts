@@ -2,7 +2,8 @@ import { Ref } from "vue";
 
 export type DropTargetIdentifier = string | number | symbol;
 export type DropTarget<PayloadType> = {
-  id: DropTargetIdentifier;
+  identifier: DropTargetIdentifier;
+  group?: DropTargetIdentifier;
   type: "list" | "dropzone";
   listItems?: PayloadType[];
   index?: number;

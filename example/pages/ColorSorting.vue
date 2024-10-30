@@ -51,15 +51,23 @@ const reset = () => {
       list-key="color"
       :options="{
         pickedItemClass: 'invisible',
+        // base class of the hovered element:
         hoverClass:
           'opacity-70 cursor-grabbing scale-105 drop-shadow-[0_10px_15px_rgba(0,0,0,0.25)]',
         // the ! overrides are required for top and left to override the following of the pointer
-        // the ! overrides for other properties are necessary to override what is in hoverClass
-        dropClass:
-          '!top-[var(--landingzone-top)] !left-[var(--landingzone-left)] !opacity-100 !scale-100 drop-shadow-none',
-        hoverTransitionClass: 'transition-all ease-in duration-100',
+        hoverTransition: {
+          // original element:
+          enterFromClass: 'opacity-100 scale-100 drop-shadow-none',
+          // transition-all should be avoided here, it will make the move-away clunky
+          enterActiveClass:
+            'transition-opacity transition-shadow transition-transform',
+          // to snap to the target element, these should be the values:
+          leaveActiveClass: 'transition-all duration-500',
+          leaveToClass:
+            '!top-[var(--landingzone-top)] !left-[var(--landingzone-left)] opacity-100 scale-100 drop-shadow-none',
+        },
         listTransition: {
-          moveClass: 'transition-all ease-in-out duration-100',
+          moveClass: 'transition-all duration-500',
           // necessary for the list to move smoothly:
           leaveActiveClass: 'absolute',
         },

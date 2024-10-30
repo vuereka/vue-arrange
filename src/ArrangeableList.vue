@@ -14,12 +14,10 @@ import {
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
 import { DropTarget, DropTargetIdentifier, type MovingItem } from "./types.js";
-import { assert } from "console";
 
 export type ArrangeableOptions = {
   hoverClass?: string;
   dropClass?: string;
-  hoverTransitionClass?: string;
   pickedItemClass?: string;
   unpickedItemClass?: string;
   listTransition?: TransitionGroupProps;
@@ -32,14 +30,16 @@ export type ArrangeableProps<T> = {
   list: T[];
   // Can we use an inferred key here, as in keyof PayloadType? It throws weird errors below.
   listKey?: string;
-  id?: DropTargetIdentifier;
+  identifier?: DropTargetIdentifier;
   meta?: any;
-  group?: string | symbol;
-  targets?: string | symbol | Array<string | symbol>;
+  group?: DropTargetIdentifier;
+  targets?: DropTargetIdentifier | Array<DropTargetIdentifier>;
 };
 
 const props = withDefaults(defineProps<ArrangeableProps<PayloadType>>(), {
-  id: Symbol(),
+  identifier: Symbol(),
+  group: undefined,
+  targets: undefined,
   meta: undefined,
   options: () => ({
     hoverClass: "",
@@ -103,7 +103,7 @@ const hoverOverItem = (target: HTMLElement, index: number) => {
   enterList();
   if (
     !movingItem.value ||
-    movingItem.value?.destination?.id !== props.id ||
+    movingItem.value?.destination?.identifier !== props.identifier ||
     isMoving(arrangedItems.value[index])
   ) {
     return;
@@ -148,8 +148,7 @@ const leaveList = () => {
     if (itemIndex >= 0) {
       keyItemsList.value.splice(itemIndex, 1);
     }
-    if (movingItem.value.destination?.id == props.id) {
-      console.log("leaving list, origin:", originItemBoundingBox);
+    if (movingItem.value.destination?.identifier == props.identifier) {
       movingItem.value.destination = movingItem.value.origin;
     }
   }
@@ -158,11 +157,11 @@ const leaveList = () => {
 const enterList = () => {
   if (
     movingItem.value &&
-    (movingItem.value.dropTargets.includes(props.id) ||
+    (movingItem.value.dropTargets.includes(props.identifier) ||
       (props.group && movingItem.value.dropTargets.includes(props.group)))
   ) {
     movingItem.value.destination = {
-      id: props.id,
+      identifier: props.identifier,
       type: "list",
       listItems: arrangedItems.value,
       meta: props.meta,
@@ -190,7 +189,7 @@ const liftItem = (event: PointerEvent, { key, payload }: KeyItem) => {
   offsetY = pointer.y.value - originItemBoundingBox.y;
   const originIndex = arrangedItems.value.indexOf(payload);
   const origin: DropTarget<PayloadType> = {
-    id: props.id,
+    identifier: props.identifier,
     type: "list",
     listItems: arrangedItems.value,
     index: originIndex,
@@ -200,10 +199,36 @@ const liftItem = (event: PointerEvent, { key, payload }: KeyItem) => {
     hoverElement,
     origin: origin,
     destination: { ...origin, meta: props.meta },
-    dropTargets: [props.targets ?? props.group ?? props.id].flat(),
+    dropTargets: [props.targets ?? props.group ?? props.identifier].flat(),
     key,
   };
   emit("liftItem", toRaw(movingItem.value));
+};
+
+/**
+ * Set coordinates of the snap-target element as CSS-variables to use in dynamic classes
+ **/
+const setLandingZone = () => {
+  const landingZone =
+    document
+      .getElementById("arrangeable-list-target-element")
+      ?.getBoundingClientRect() ?? originItemBoundingBox;
+  if (!landingZone) return;
+  for (const property of [
+    "x",
+    "y",
+    "width",
+    "height",
+    "top",
+    "right",
+    "bottom",
+    "left",
+  ] as const) {
+    hoverElement.value?.style.setProperty(
+      `--landingzone-${property}`,
+      landingZone[property] + "px"
+    );
+  }
 };
 
 /**
@@ -211,33 +236,22 @@ const liftItem = (event: PointerEvent, { key, payload }: KeyItem) => {
  * This is NOT triggered when an element from another list is dropped onto this one.
  */
 const dropItem = () => {
-  if (movingItem.value === undefined || movingItem.value.origin.id !== props.id)
+  if (
+    movingItem.value === undefined ||
+    movingItem.value.origin.identifier !== props.identifier
+  )
     return;
 
-  console.log(props.options?.dropClass);
-  const landingZone =
-    document
-      .getElementById("arrangeable-list-target-element")
-      ?.getBoundingClientRect() ?? originItemBoundingBox;
-
-  if (landingZone instanceof DOMRect)
-    for (const property of [
-      "x",
-      "y",
-      "width",
-      "height",
-      "top",
-      "right",
-      "bottom",
-      "left",
-    ] as const) {
-      hoverElement.value?.style.setProperty(
-        `--landingzone-${property}`,
-        landingZone[property] + "px"
-      );
-    }
+  setLandingZone();
 
   emit("dropItem", toRaw(movingItem.value));
+
+  // this is required for dynamic classes; no way around yet using standard vue transition classes which are fixed.
+  props.options.dropClass
+    ?.split(" ")
+    .forEach(
+      (className) => className && hoverElement.value?.classList.add(className)
+    );
 
   // repopulation is needed in case the drop event did not trigger a props change
   // otherwise the dropped item disappears.
@@ -252,6 +266,8 @@ let originItemBoundingBox: DOMRect | undefined;
 
 const beforeKey = Symbol();
 const afterKey = Symbol();
+
+const itemInTransit = ref<PayloadType | undefined>();
 
 onMounted(() => {
   populateList(props.list);
@@ -277,7 +293,7 @@ onMounted(() => {
           isMoving(item.payload) ? 'arrangeable-list-target-element' : undefined
         "
         :class="
-          isMoving(item.payload)
+          isMoving(item.payload) || itemInTransit === item.payload
             ? options.pickedItemClass
             : options.unpickedItemClass
         "
@@ -299,20 +315,8 @@ onMounted(() => {
     <Transition
       ref="hoverElement"
       v-bind="options.hoverTransition"
-      :enter-from-class="
-        options.dropClass || options.hoverTransition?.enterFromClass
-      "
-      :leave-to-class="
-        options.dropClass || options.hoverTransition?.leaveToClass
-      "
-      :enter-active-class="
-        options.hoverTransitionClass ||
-        options.hoverTransition?.enterActiveClass
-      "
-      :leave-active-class="
-        options.hoverTransitionClass ||
-        options.hoverTransition?.leaveActiveClass
-      "
+      @before-enter="itemInTransit = movingItem?.payload"
+      @after-leave="itemInTransit = undefined"
       :class="options.hoverClass"
       :style="{
         left: pointer.x.value - offsetX + 'px',
@@ -320,7 +324,7 @@ onMounted(() => {
       }"
       style="z-index: 100000000; position: absolute"
     >
-      <div v-if="movingItem && movingItem.origin.id === id">
+      <div v-if="movingItem && movingItem.origin.identifier === identifier">
         <slot :item="movingItem.payload" />
       </div>
     </Transition>
