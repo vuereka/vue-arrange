@@ -117,14 +117,15 @@ const listOptions = {
 <template>
   <main class="flex flex-grow flex-row items-start overflow-auto">
     <div
-      class="list"
+      class="float-left m-1 h-fit w-60 rounded-md border-2 border-black"
       v-for="(list, listIdentifier) in lists"
       :key="listIdentifier"
       :style="{ backgroundColor: list.color[100] }"
     >
-      <div class="header">
+      <div class="flex border-none p-2 text-2xl font-bold">
+        <div name="listHandle" class="mr-2 cursor-grab">&#65049;</div>
         <input
-          class="header"
+          class="background-transparent"
           @change="$event => list.name = ($event.target as HTMLInputElement)?.value"
           :value="list.name"
         />
@@ -143,7 +144,10 @@ const listOptions = {
         @drop-item="dropItem"
       >
         <template #default="{ item }">
-          <div class="listitem" :style="{ backgroundColor: list.color[300] }">
+          <div
+            class="m-1 flex items-center rounded border-2 border-black p-2 text-xl"
+            :style="{ backgroundColor: list.color[300] }"
+          >
             <div name="grabHandle" class="mr-2 cursor-grab">&#65049;</div>
             {{ item.description }}
           </div>
@@ -152,12 +156,15 @@ const listOptions = {
           <div
             ref="list.dropZone"
             v-if="arrangedItems.length === 0 && movingItem"
-            class="drop-zone listitem h-12"
+            class="m-1 h-12 rounded border-2 border-dashed border-black"
             :style="{ backgroundColor: list.color[200] }"
           />
         </template>
         <template #after>
-          <div class="listitem" :style="{ backgroundColor: list.color[200] }">
+          <div
+            class="m-1 flex items-center rounded border-2 border-black p-2 text-xl"
+            :style="{ backgroundColor: list.color[200] }"
+          >
             <input
               @change="addItem($event as InputEvent, listIdentifier)"
               placeholder="New item"
@@ -184,18 +191,6 @@ const listOptions = {
 </template>
 
 <style scoped>
-.list {
-  width: 224px;
-  height: fit-content;
-  float: left;
-  margin: 4px;
-  border-radius: 6px;
-  border-width: 2px;
-  border-color: black;
-  border-style: groove;
-  text-align: left;
-}
-
 .header {
   padding-left: 8px;
   text-align: left;
@@ -204,28 +199,9 @@ const listOptions = {
   border-bottom: none;
 }
 
-.listitem {
-  display: flex;
-  align-items: center;
-  width: 216px;
-  margin: 2px;
-  padding: 8px;
-  font-size: 20px;
-  border-radius: 4px;
-  border-width: 2px;
-  border-color: black;
-  border-style: groove;
-}
-
 input {
   width: 100%;
-  font-size: 18px;
   background-color: transparent;
   border: none;
-  border-bottom: 2px solid black;
-}
-
-.drop-zone {
-  border-style: dashed;
 }
 </style>
