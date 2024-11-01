@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ArrangeableList, type MovingItem } from "../../src";
-import tailwindColors from "tailwindcss/colors";
+import { tailwindColors } from "../colors";
 
 type ItemType = { name: string; color: string; index: number };
 
 const colors = ref<ItemType[]>(
-  Object.entries(tailwindColors)
-    .slice(10, 27)
-    .map(([colorName, colorMap], index) => ({
-      name: colorName,
-      color: colorMap[300],
-      index,
-    }))
+  Object.keys(tailwindColors).map((color, index) => ({
+    name: color,
+    color: tailwindColors[color][300],
+    index,
+  }))
 );
 
 const dropItem = ({ destination }: MovingItem<ItemType>) => {
@@ -67,7 +65,7 @@ const reset = () => {
             '!top-[var(--landingzone-top)] !left-[var(--landingzone-left)] opacity-100 scale-100 drop-shadow-none',
         },
         listTransition: {
-          moveClass: 'transition-all duration-500',
+          moveClass: 'transition-all duration-300',
           // necessary for the list to move smoothly:
           leaveActiveClass: 'absolute',
         },

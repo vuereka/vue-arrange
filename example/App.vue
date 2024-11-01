@@ -3,7 +3,7 @@ import { shallowRef } from "vue";
 import ColorSorting from "./pages/ColorSorting.vue";
 import KanBan from "./pages/KanBan.vue";
 
-const selection = shallowRef(KanBan);
+const selection = shallowRef(ColorSorting);
 const options = [
   {
     title: "Color Sorting Game",

@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import { computed, Ref, ref } from "vue";
+import { Ref, ref } from "vue";
+import KanBanList from "./components/KanBanList.vue";
 import {
   ArrangeableList,
   DropZone,
   useMovingItem,
   type MovingItem,
-  ArrangeableOptions,
+  type DropTargetIdentifier,
 } from "../../src";
-import { DropTargetIdentifier } from "../../src/types";
-import tailwindColors from "tailwindcss/colors";
+import { randomColorMap } from "../colors";
 
-type ItemType = { description: string };
+export type ItemType = { description: string };
+export type ListType = {
+  name: string;
+  identifier: symbol;
+  items: ItemType[];
+  dropZone: DropTargetIdentifier;
+  color: string;
+};
+
 const { movingItem } = useMovingItem<ItemType>();
 
 const data = [
@@ -22,81 +30,57 @@ const data = [
   "Set up Vue project",
 ];
 
-type ListType = {
-  name: string;
-  items: ItemType[];
-  dropZone: Ref<Element | undefined>;
-  color: string;
-};
-
-const colors = Object.entries(tailwindColors).slice(10, 27);
-const randomColor = () => {
-  return colors[Math.floor(Math.random() * colors.length)][1];
-};
+const dropTargets = Symbol("Drop zones");
+const trashBin = Symbol("Trash bin");
+const trashBinElement = ref<Element>();
 
 const lists = ref<ListType[]>([
   {
     name: "To do:",
+    identifier: Symbol(),
     items: data.map((description) => ({ description })) as ItemType[],
-    dropZone: ref<Element>(),
-    color: randomColor(),
+    dropZone: dropTargets,
+    color: randomColorMap(),
   },
   {
     name: "Done:",
+    identifier: Symbol(),
     items: [] as ItemType[],
-    dropZone: ref<Element>(),
-    color: randomColor(),
+    dropZone: dropTargets,
+    color: randomColorMap(),
   },
 ]);
 
-const addItem = ($event: InputEvent, listIdentifier: DropTargetIdentifier) => {
-  if (!$event.target) return;
-  lists.value[listIdentifier].items.push({
-    description: ($event.target as HTMLInputElement).value,
-  });
-  console.log(
-    lists.value[listIdentifier].items.map((item) => item.description)
-  );
-  ($event.target as HTMLInputElement).value = "";
+const addItem = (description: string, listIdentifier: symbol) => {
+  lists.value
+    .find((list) => list.identifier === listIdentifier)
+    ?.items.push({ description });
 };
 
 const dropItem = (item: MovingItem<ItemType>) => {
-  // There are 4 drop-cases in this simple app, each with its own logic:
-  // 1. drop in the middle of nowhere, return to its original place
-  // 2. drop in the trash bin
-  // 3. drop into a list
-  // 4. drop into the dropzone of an empty list
   if (item.destination === undefined) {
+    // if there is no target, do nothing; return element to the original place
     return;
   }
   if (item.destination.identifier === trashBin) {
+    // in the trashbin, destroy element from its original list
     lists.value[item.origin.identifier].items.splice(item.origin.index, 1);
     return;
   }
-  // else, (if there is a target, and it is not the trash bin)
-  if (item.origin.listItems && item.origin.index !== undefined) {
-    if (item.destination?.index !== undefined) {
-      if (item.destination.listItems)
-        item.destination.listItems.splice(
-          item.destination.index,
-          0,
-          item.origin.listItems.splice(item.origin.index, 1)[0]
-        );
-    } else {
-      if (item.destination.listItems)
-        item.destination.listItems.push(
-          item.origin.listItems.splice(item.origin.index, 1)[0]
-        );
-    }
+  // else, move the element to new position and/or new list
+  const originItem = (item.origin.listItems as ItemType[]).splice(
+    item.origin.index as number,
+    1
+  )[0];
+  if (item.destination.index !== undefined) {
+    if (item.destination.listItems)
+      item.destination.listItems.splice(item.destination.index, 0, originItem);
+  } else {
+    if (item.destination.listItems) item.destination.listItems.push(originItem);
   }
 };
 
-const dropzones = Symbol("Drop zones");
-const trashBin = Symbol("Trash bin");
-
-const trashBinElement = ref<Element>();
-
-const listOptions = {
+const arrangeableOptions = {
   hoverClass:
     "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-110",
   pickedItemClass: "invisible",
@@ -106,76 +90,52 @@ const listOptions = {
       "transition-opacity transition-shadow transition-transform",
   },
   listTransition: {
-    moveClass: "transition-all",
+    moveClass: "transition-all duration-1000 bg-red-400",
     // necessary for the list to move smoothly:
     leaveActiveClass: "absolute",
   },
-  handle: "grabHandle",
 };
 </script>
 
 <template>
   <main class="flex flex-grow flex-row items-start overflow-auto">
-    <div
-      class="float-left m-1 h-fit w-60 rounded-md border-2 border-black"
-      v-for="(list, listIdentifier) in lists"
-      :key="listIdentifier"
-      :style="{ backgroundColor: list.color[100] }"
+    <ArrangeableList
+      :list="lists"
+      class="flex flex-grow flex-row items-start overflow-auto"
+      :options="{
+        ...arrangeableOptions,
+        name: 'columns',
+        handle: 'listHandle',
+      }"
     >
-      <div class="flex border-none p-2 text-2xl font-bold">
-        <div name="listHandle" class="mr-2 cursor-grab">&#65049;</div>
-        <input
-          class="background-transparent"
-          @change="$event => list.name = ($event.target as HTMLInputElement)?.value"
-          :value="list.name"
-        />
-      </div>
-      <ArrangeableList
-        :list="list.items as ItemType[]"
-        :identifier="listIdentifier"
-        :group="dropzones"
-        :options="{
-          ...listOptions,
-          dropClass:
-            movingItem?.destination?.identifier === trashBin
-              ? 'transition-all scale-0 opacity-100 !top-[var(--landingzone-top)] !left-[var(--landingzone-left)] '
-              : 'transition-all opacity-100 scale-100 drop-shadow-none !top-[var(--landingzone-top)] !left-[var(--landingzone-left)]',
-        }"
-        @drop-item="dropItem"
-      >
-        <template #default="{ item }">
-          <div
-            class="m-1 flex items-center rounded border-2 border-black p-2 text-xl"
-            :style="{ backgroundColor: list.color[300] }"
-          >
-            <div name="grabHandle" class="mr-2 cursor-grab">&#65049;</div>
-            {{ item.description }}
-          </div>
-        </template>
-        <template #before="{ arrangedItems }">
-          <div
-            ref="list.dropZone"
-            v-if="arrangedItems.length === 0 && movingItem"
-            class="m-1 h-12 rounded border-2 border-dashed border-black"
-            :style="{ backgroundColor: list.color[200] }"
-          />
-        </template>
-        <template #after>
-          <div
-            class="m-1 flex items-center rounded border-2 border-black p-2 text-xl"
-            :style="{ backgroundColor: list.color[200] }"
-          >
+      <template #default="{ item: list }">
+        <div
+          class="float-left m-1 h-fit w-60 rounded-md border-2 border-black"
+          :key="list.identifier"
+          :style="{ backgroundColor: list.color[100] }"
+        >
+          <div class="flex border-none p-2 text-2xl font-bold">
+            <div name="listHandle" class="mr-2 cursor-grab">&#65049;</div>
             <input
-              @change="addItem($event as InputEvent, listIdentifier)"
-              placeholder="New item"
+              class="w-full bg-transparent"
+              @change="$event => list.name = ($event.target as HTMLInputElement)?.value"
+              :value="list.name"
             />
           </div>
-        </template>
-      </ArrangeableList>
-    </div>
+          <KanBanList
+            :list="list"
+            :group="dropTargets"
+            :trashBin="trashBin"
+            :arrangeableOptions="arrangeableOptions"
+            @add-item="addItem"
+            @drop-item="dropItem"
+          />
+        </div>
+      </template>
+    </ArrangeableList>
     <DropZone
       :identifier="trashBin"
-      :group="dropzones"
+      :group="dropTargets"
       v-slot="{ isHovering }"
       class="inline-block"
     >
@@ -189,19 +149,3 @@ const listOptions = {
     </DropZone>
   </main>
 </template>
-
-<style scoped>
-.header {
-  padding-left: 8px;
-  text-align: left;
-  font-weight: bold;
-  font-size: 30px;
-  border-bottom: none;
-}
-
-input {
-  width: 100%;
-  background-color: transparent;
-  border: none;
-}
-</style>

@@ -16,6 +16,7 @@ import PointerElement from "./PointerElement.vue";
 import { DropTarget, DropTargetIdentifier, type MovingItem } from "./types.js";
 
 export type ArrangeableOptions = {
+  name?: string;
   hoverClass?: string;
   dropClass?: string;
   pickedItemClass?: string;
@@ -57,8 +58,10 @@ type KeyItem = {
   key: any;
 };
 
-const { movingItem, isMoving } = useMovingItem<PayloadType>();
+const { movingItem, isMoving: isHovering } = useMovingItem<PayloadType>();
 const hoverElement = ref<HTMLElement>();
+const listElement = ref<HTMLElement>();
+
 // https://github.com/vuejs/core/issues/2136#issuecomment-908269949
 const keyItemsList = ref<KeyItem[]>([]) as Ref<KeyItem[]>;
 const arrangedItems = computed(
@@ -104,7 +107,7 @@ const hoverOverItem = (target: HTMLElement, index: number) => {
   if (
     !movingItem.value ||
     movingItem.value?.destination?.identifier !== props.identifier ||
-    isMoving(arrangedItems.value[index])
+    isHovering(arrangedItems.value[index])
   ) {
     return;
   }
@@ -172,17 +175,24 @@ const enterList = () => {
 let offsetX: number = 0;
 let offsetY: number = 0;
 
-const liftItem = (event: PointerEvent, { key, payload }: KeyItem) => {
+const handleName = computed(() => {
+  return typeof props.options.handle === "string"
+    ? props.options.handle
+    : "handle";
+});
+
+const liftItem = (
+  { target, currentTarget }: PointerEvent,
+  { key, payload }: KeyItem
+) => {
   if (
-    props.options?.handle &&
-    (event.target as HTMLElement).attributes.getNamedItem("name")?.value !==
-      (typeof props.options.handle === "string"
-        ? props.options.handle
-        : "handle")
+    !!props.options.handle &&
+    (target as HTMLElement)?.getAttribute("name") !== handleName.value
   )
     return;
+
   originItemBoundingBox = (
-    event.currentTarget as HTMLElement
+    currentTarget as HTMLElement
   )?.getBoundingClientRect();
 
   offsetX = pointer.x.value - originItemBoundingBox.x;
@@ -202,6 +212,7 @@ const liftItem = (event: PointerEvent, { key, payload }: KeyItem) => {
     dropTargets: [props.targets ?? props.group ?? props.identifier].flat(),
     key,
   };
+  setLandingZone();
   emit("liftItem", toRaw(movingItem.value));
 };
 
@@ -209,28 +220,28 @@ const liftItem = (event: PointerEvent, { key, payload }: KeyItem) => {
  * Set coordinates of the snap-target element as CSS-variables to use in dynamic classes
  **/
 const setLandingZone = () => {
-  const landingZone =
+  landingZone.value =
     document
       .getElementById("arrangeable-list-target-element")
       ?.getBoundingClientRect() ?? originItemBoundingBox;
-  if (!landingZone) return;
-  for (const property of [
-    "x",
-    "y",
-    "width",
-    "height",
-    "top",
-    "right",
-    "bottom",
-    "left",
-  ] as const) {
-    hoverElement.value?.style.setProperty(
-      `--landingzone-${property}`,
-      landingZone[property] + "px"
-    );
-  }
+  // if (!landingZone) return;
+  // for (const property of [
+  //   "x",
+  //   "y",
+  //   "width",
+  //   "height",
+  //   "top",
+  //   "right",
+  //   "bottom",
+  //   "left",
+  // ] as const) {
+  //   listElement.value?.style.setProperty(
+  //     `--landingzone-${property}`,
+  //     landingZone[property] + "px"
+  //   );
+  // }
 };
-
+const landingZone = ref<DOMRect | undefined>();
 /**
  * dropItem happens when an element from this ArrangedList is dropped somewhere.
  * This is NOT triggered when an element from another list is dropped onto this one.
@@ -242,7 +253,7 @@ const dropItem = () => {
   )
     return;
 
-  setLandingZone();
+  nextTick(() => setLandingZone());
 
   emit("dropItem", toRaw(movingItem.value));
 
@@ -273,6 +284,7 @@ onMounted(() => {
   populateList(props.list);
   document.body.style.touchAction = "none";
 });
+const { log } = console;
 </script>
 
 <template>
@@ -290,14 +302,16 @@ onMounted(() => {
         v-for="(item, index) in keyItemsList || []"
         :key="item.key"
         :id="
-          isMoving(item.payload) ? 'arrangeable-list-target-element' : undefined
+          isHovering(item.payload)
+            ? 'arrangeable-list-target-element'
+            : undefined
         "
         :class="
-          isMoving(item.payload) || itemInTransit === item.payload
+          isHovering(item.payload) || itemInTransit === item.payload
             ? options.pickedItemClass
             : options.unpickedItemClass
         "
-        @pointerdown.left.prevent="liftItem($event, item)"
+        @pointerdown.left.stop="liftItem($event, item)"
         @pointer-enter="(target) => hoverOverItem(target, index)"
       >
         <slot
@@ -321,6 +335,14 @@ onMounted(() => {
       :style="{
         left: pointer.x.value - offsetX + 'px',
         top: pointer.y.value - offsetY + 'px',
+        width: originItemBoundingBox?.width + 'px',
+        height: originItemBoundingBox?.height + 'px',
+        '--landingzone-top': landingZone?.top + 'px',
+        '--landingzone-left': landingZone?.left + 'px',
+        '--landingzone-right': landingZone?.right + 'px',
+        '--landingzone-bottom': landingZone?.bottom + 'px',
+        '--landingzone-width': landingZone?.width + 'px',
+        '--landingzone-height': landingZone?.height + 'px',
       }"
       style="z-index: 100000000; position: absolute"
     >
