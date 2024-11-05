@@ -6,6 +6,7 @@ import { useMovingItem } from "../../../src";
 
 defineProps<{
   list: ListType;
+  items: ItemType[];
   group: TargetIdentifier;
   trashBin: TargetIdentifier;
   arrangeableOptions: ArrangeableOptions;
@@ -16,7 +17,7 @@ const emit = defineEmits<{
   (e: "drop-item", item: MovingItem<ItemType>): void;
 }>();
 
-const { movingItem, movingItemCanTarget } = useMovingItem<ItemType>();
+const { movingItem } = useMovingItem<ItemType>();
 
 const addItem = ($event: InputEvent, listIdentifier: symbol) => {
   if (!$event.target || !listIdentifier) return;
@@ -27,8 +28,9 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
 
 <template>
   <ArrangeableList
-    :list="list.items as ItemType[]"
-    :identifier="list.identifier"
+    :list="items"
+    :identifier="list.id"
+    list-key="id"
     :group="group"
     :options="{
       ...arrangeableOptions,
@@ -42,19 +44,12 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
         :style="{ backgroundColor: list.color[300] }"
       >
         <div name="cardHandle" class="mr-2 cursor-grab">&#65049;</div>
-        {{ item.description }}
+        <input
+          class="w-full bg-transparent"
+          @change="$event => item.description = ($event.target as HTMLInputElement)?.value"
+          :value="item.description"
+        />
       </div>
-    </template>
-    <template #before="{ arrangedItems }">
-      <div
-        ref="list.dropZone"
-        v-if="
-          arrangedItems.length === 0 &&
-          movingItemCanTarget([list.identifier, group])
-        "
-        class="qwerty m-1 h-12 rounded border-2 border-dashed border-black"
-        :style="{ backgroundColor: list.color[200] }"
-      />
     </template>
     <template #after>
       <div
@@ -62,8 +57,8 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
         :style="{ backgroundColor: list.color[200] }"
       >
         <input
-          @change="addItem($event as InputEvent, list.identifier)"
-          class="w-full border-b-2 border-gray-400 bg-transparent outline-none focus-visible:border-black"
+          @change="addItem($event as InputEvent, list.id)"
+          class="w-full border-b-2 border-gray-400 bg-transparent italic outline-none focus-visible:border-black"
           placeholder="New item"
         />
       </div>

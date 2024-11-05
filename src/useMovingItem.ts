@@ -9,10 +9,10 @@ export const useMovingItem = <PayloadType>() => {
     return item === movingItem.value.payload;
   }
 
-  function movingItemCanTarget(targets: Array<TargetIdentifier>) {
+  function movingItemCanTarget(targets: Array<TargetIdentifier | undefined>) {
     if (movingItem.value === undefined) return false;
-    return movingItem.value.dropTargets.some((target) =>
-      targets.includes(target)
+    return movingItem.value.dropTargets.some(
+      (target) => target !== undefined && targets.includes(target)
     );
   }
 

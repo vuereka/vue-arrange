@@ -57,7 +57,8 @@ const homingEffectClass = computed<string>(() => {
 });
 
 const pointer = usePointer();
-const { movingItem, isMoving: isHovering } = useMovingItem<PayloadType>();
+const { movingItem, isMoving, movingItemCanTarget } =
+  useMovingItem<PayloadType>();
 
 const hoverElement = ref<HTMLElement>();
 const listElement = ref<HTMLElement>();
@@ -99,6 +100,8 @@ const emit = defineEmits<{
   (e: "liftItem", item: MovingItem<PayloadType>): void;
   (e: "dropItem", item: MovingItem<PayloadType>): void;
   (e: "hoverOverItem", item: MovingItem<PayloadType>): void;
+  (e: "enterList", item: MovingItem<PayloadType>): void;
+  (e: "leaveList", item: MovingItem<PayloadType>): void;
 }>();
 
 /**
@@ -106,19 +109,21 @@ const emit = defineEmits<{
  * @param index: index of the item hovered over.
  */
 const hoverOverItem = (index: number) => {
-  enterList();
   if (
     !movingItem.value ||
     movingItem.value?.destination?.identifier !== identifier.value ||
-    isHovering(arrangedItems.value[index])
+    isMoving(arrangedItems.value[index])
   ) {
     return;
   }
   emit("hoverOverItem", toRaw(movingItem.value));
-  movingItem.value.destination.index = index;
 
   // if the dragging item does not appear in the list, add it
-  if (!arrangedItems.value?.includes(movingItem.value.payload)) {
+  if (
+    keyItemsList.value.findIndex(
+      ({ payload }) => payload === movingItem.value?.payload
+    ) === -1
+  ) {
     keyItemsList.value.splice(index, 0, {
       payload: movingItem.value.payload,
       key: movingItem.value.key,
@@ -144,6 +149,8 @@ const hoverOverItem = (index: number) => {
             ...keyItemsList.value.slice(moverIndex + 1),
           ];
   }
+  movingItem.value.destination.index = index;
+  movingItem.value.destination.listItems = arrangedItems.value;
 };
 
 const leaveList = () => {
@@ -166,6 +173,10 @@ const enterList = () => {
     (movingItem.value.dropTargets.includes(identifier.value) ||
       (props.group && movingItem.value.dropTargets.includes(props.group)))
   ) {
+    if (arrangedItems.value.length === 0)
+      keyItemsList.value = [
+        { payload: movingItem.value.payload, key: movingItem.value.key },
+      ];
     movingItem.value.destination = {
       identifier: identifier.value,
       type: "list",
@@ -300,14 +311,12 @@ const dropItem = () => {
       );
     else movingItem.value = undefined;
   });
-
   emit("dropItem", toRaw(movingItem.value));
 
   // repopulation is needed in case the drop event did not trigger a props change
   // otherwise the dropped item disappears.
   populateList(props.list);
 };
-
 useEventListener(document, "pointerup", dropItem);
 
 const beforeKey = Symbol();
@@ -326,7 +335,13 @@ onMounted(() => {
     name="ArrangeableList"
     ref="listElement"
   >
-    <TransitionGroup v-bind="options.listTransition">
+    <TransitionGroup
+      v-bind="
+        !movingItem || movingItemCanTarget([identifier, group])
+          ? options.listTransition
+          : {} // fix for vue bug https://github.com/vuejs/core/issues/5385
+      "
+    >
       <div :key="beforeKey">
         <slot name="before" :arrangedItems="arrangedItems" />
       </div>
@@ -334,12 +349,10 @@ onMounted(() => {
         v-for="(item, index) in keyItemsList || []"
         :key="item.key"
         :id="
-          isHovering(item.payload)
-            ? 'arrangeable-list-target-element'
-            : undefined
+          isMoving(item.payload) ? 'arrangeable-list-target-element' : undefined
         "
         :class="
-          isHovering(item.payload)
+          isMoving(item.payload)
             ? options.pickedItemClass
             : options.defaultItemClass
         "

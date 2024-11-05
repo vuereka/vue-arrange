@@ -1,24 +1,30 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import KanBanList from "./components/KanBanList.vue";
 import {
   ArrangeableList,
   DropZone,
+  useMovingItem,
   type MovingItem,
-  type DropTargetIdentifier,
 } from "../../src";
 import { randomColorMap } from "../colors";
 
-export type ItemType = { description: string };
+export type ItemType = {
+  id: symbol;
+  description: string;
+  listId: symbol;
+  index: number;
+};
 export type ListType = {
   name: string;
-  identifier: symbol;
-  items: ItemType[];
-  dropZone: DropTargetIdentifier;
+  id: symbol;
   color: string;
+  index: number;
 };
 
-const data = [
+const { movingItem } = useMovingItem<ItemType | ListType>();
+
+const itemData = [
   "Build app",
   "Debug the code",
   "Commit and push to github",
@@ -27,88 +33,79 @@ const data = [
   "Set up Vue project",
 ];
 
-const dropTargets = Symbol("Drop zones");
+const listData = ["To do:", "Done"];
+
+const dropTargets = Symbol("Drop targets");
 const trashBin = Symbol("Trash bin");
-const trashBinElement = ref<Element>();
 
-const lists = ref<ListType[]>([
-  {
-    name: "To do:",
-    identifier: Symbol(),
-    items: data.map((description) => ({ description })) as ItemType[],
-    dropZone: dropTargets,
-    color: randomColorMap(),
-  },
-  {
-    name: "Done:",
-    identifier: Symbol(),
-    items: [] as ItemType[],
-    dropZone: dropTargets,
-    color: randomColorMap(),
-  },
-]);
-
-const addItem = (description: string, listIdentifier: symbol) => {
-  lists.value
-    .find((list) => list.identifier === listIdentifier)
-    ?.items.push({ description });
-};
-
-const dropItem = (item: MovingItem<ItemType>) => {
-  if (item.destination === undefined) {
-    // if there is no target, do nothing; return element to the original place
-    return;
-  }
-  if (item.destination.identifier === trashBin) {
-    // in the trashbin, destroy element from its original list
-    lists.value[item.origin.identifier].items.splice(item.origin.index, 1);
-    return;
-  }
-  // else, move the element to new position and/or new list
-  const originItem = (item.origin.listItems as ItemType[]).splice(
-    item.origin.index as number,
-    1
-  )[0];
-  if (item.destination.index !== undefined) {
-    if (item.destination.listItems)
-      item.destination.listItems.splice(item.destination.index, 0, originItem);
-  } else {
-    if (item.destination.listItems) item.destination.listItems.push(originItem);
-  }
-};
-
-const addList = (event: Event) => {
-  const name = (event.target as HTMLInputElement)?.value;
-  lists.value.push({
+const lists = ref<ListType[]>(
+  listData.map((name, index) => ({
     name,
-    identifier: Symbol(),
-    items: [] as ItemType[],
-    dropZone: dropTargets,
+    id: Symbol(name),
+    color: randomColorMap(),
+    index,
+  }))
+);
+
+const items = ref<ItemType[]>(
+  itemData.map((description, index) => ({
+    description,
+    id: Symbol(),
+    listId: lists.value[Math.floor(Math.random() * listData.length)].id,
+    index,
+  }))
+);
+
+const addItem = (eventTarget: HTMLInputElement, listId: symbol) => {
+  items.value.push({
+    description: eventTarget.value,
+    id: Symbol(),
+    listId,
+    index: Math.max(...items.value.map(({ index }) => index)) + 1,
+  });
+  eventTarget.value = "";
+};
+
+const addList = ({ target }: { target: HTMLInputElement }) => {
+  lists.value.push({
+    name: target.value,
+    id: Symbol(target.value),
     color: newListColor.value,
+    index: Math.max(...lists.value.map(({ index }) => index)) + 1,
   });
   newListColor.value = randomColorMap();
-  (event.target as HTMLInputElement).value = "";
+  target.value = "";
 };
 
-const dropList = (list: MovingItem<ListType>) => {
-  if (list.destination === undefined) {
-    return;
+const dropItem = <T extends ListType | ItemType>(item: MovingItem<T>) => {
+  const targetTable = "listId" in item.payload ? items : lists;
+  // if there is no target, do nothing; return element to the original place
+  if (item.destination === undefined) return;
+  // if the target is the trashbin, remove it
+  if (item.destination.identifier === trashBin) {
+    targetTable.value = targetTable.value.filter(
+      ({ id }) => id !== item.payload.id
+    ) as typeof targetTable.value;
   }
-  const originList = lists.value.splice(list.origin.index as number, 1)[0];
-  if (list.destination.index !== undefined) {
-    lists.value = [
-      ...lists.value.slice(0, list.destination.index),
-      originList,
-      ...lists.value.slice(list.destination.index),
-    ];
-  } else {
-    lists.value.push(originList);
+  // else, add the element to the destination list
+  else {
+    if (item.destination.listItems?.length === 0) {
+      item.payload.index = 0;
+      if ("listId" in item.payload)
+        item.payload.listId = item.destination?.identifier as symbol;
+    }
+    item.destination.listItems?.forEach((listItem, index) => {
+      listItem.index = index;
+      if ("listId" in listItem)
+        listItem.listId = item.destination?.identifier as symbol;
+    });
+    targetTable.value.sort((a, b) => a.index - b.index);
   }
 };
 
 const arrangeableOptions = {
   hoverClass:
-    "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-110",
+    "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-110 -rotate-3",
 };
 
 const newListColor = ref(randomColorMap());
@@ -118,17 +115,19 @@ const newListColor = ref(randomColorMap());
   <main class="flex flex-grow flex-row items-start overflow-auto">
     <ArrangeableList
       :list="lists"
+      identifier="lists"
+      list-key="id"
       class="flex flex-grow flex-row items-start overflow-auto"
       :options="{
         ...arrangeableOptions,
         handle: 'listHandle',
       }"
-      @drop-item="dropList"
+      @drop-item="dropItem"
+      :targets="[trashBin, 'lists']"
     >
       <template #default="{ item: list }">
         <div
           class="float-left m-1 h-fit w-60 rounded-md border-2 border-black"
-          :key="list.identifier"
           :style="{ backgroundColor: list.color[100] }"
         >
           <div class="flex border-none p-2 text-2xl font-bold">
@@ -141,9 +140,10 @@ const newListColor = ref(randomColorMap());
           </div>
           <KanBanList
             :list="list"
+            :items="items.filter(({ listId }) => listId === list.id)"
             :group="dropTargets"
-            :trash-bin="trashBin"
-            :arrangeable-options="arrangeableOptions"
+            :trashBin="trashBin"
+            :arrangeableOptions="arrangeableOptions"
             @add-item="addItem"
             @drop-item="dropItem"
           />
@@ -151,16 +151,14 @@ const newListColor = ref(randomColorMap());
       </template>
       <template #after>
         <div
-          class="m-1 h-fit w-60 rounded-md border-2 border-black"
+          class="m-1 flex h-fit w-60 rounded-md border-2 border-black p-2 text-2xl"
           :style="{ backgroundColor: newListColor[100] }"
         >
-          <div class="flex border-none p-2 text-2xl font-bold">
-            <input
-              class="w-full bg-transparent"
-              @change="addList"
-              placeholder="New list"
-            />
-          </div>
+          <input
+            class="w-full border-b-2 border-gray-400 bg-transparent italic outline-none focus-visible:border-black"
+            @change="addList"
+            placeholder="New list"
+          />
         </div>
       </template>
     </ArrangeableList>
@@ -171,9 +169,8 @@ const newListColor = ref(randomColorMap());
       class="inline-block"
     >
       <div
-        ref="trashBinElement"
-        class="flex h-32 w-32 items-center justify-center transition-all"
-        :class="isHovering ? 'text-6xl' : 'text-5xl'"
+        class="flex h-40 w-40 items-center justify-center transition-all"
+        :class="isHovering ? 'text-8xl' : 'text-7xl'"
       >
         &#128465;
       </div>

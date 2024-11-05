@@ -10,7 +10,7 @@ const options = [
     comp: ColorSorting,
   },
   {
-    title: "Todo List",
+    title: "Trello Kanban",
     comp: KanBan,
   },
 ];
