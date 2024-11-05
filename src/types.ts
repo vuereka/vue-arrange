@@ -1,9 +1,19 @@
-import { Ref } from "vue";
+import { Ref, TransitionGroupProps } from "vue";
 
-export type DropTargetIdentifier = string | number | symbol;
-export type DropTarget<PayloadType> = {
-  identifier: DropTargetIdentifier;
-  group?: DropTargetIdentifier;
+export type ArrangeableOptions = {
+  defaultItemClass?: string;
+  pickedItemClass?: string;
+  listTransition?: TransitionGroupProps;
+  hoverTransitionClass?: string;
+  hoverClass?: string;
+  homingEffect?: string | boolean;
+  handle?: boolean | string;
+};
+
+export type TargetIdentifier = string | number | symbol;
+export type Target<PayloadType> = {
+  identifier: TargetIdentifier;
+  group?: TargetIdentifier;
   type: "list" | "dropzone";
   listItems?: PayloadType[];
   index?: number;
@@ -13,8 +23,8 @@ export type DropTarget<PayloadType> = {
 export type MovingItem<PayloadType> = {
   payload: PayloadType;
   hoverElement?: Ref<HTMLElement | undefined>;
-  origin: DropTarget<PayloadType>;
-  destination?: DropTarget<PayloadType>;
-  dropTargets: Array<DropTargetIdentifier>;
+  origin: Target<PayloadType>;
+  destination?: Target<PayloadType>;
+  dropTargets: Array<TargetIdentifier>;
   key: symbol;
 };

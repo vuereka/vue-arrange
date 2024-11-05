@@ -1,66 +1,69 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { usePointer, useEventListener } from "@vueuse/core";
-import {
-  ref,
-  toRaw,
-  onMounted,
-  watch,
-  computed,
-  nextTick,
-  Ref,
-  TransitionProps,
-  TransitionGroupProps,
-} from "vue";
+import { ref, toRaw, onMounted, watch, computed, nextTick, Ref } from "vue";
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
-import { DropTarget, DropTargetIdentifier, type MovingItem } from "./types.js";
+import {
+  type ArrangeableOptions,
+  TargetIdentifier,
+  Target,
+  MovingItem,
+} from "./types.js";
 
-export type ArrangeableOptions = {
-  name?: string;
-  hoverClass?: string;
-  dropClass?: string;
-  pickedItemClass?: string;
-  unpickedItemClass?: string;
-  listTransition?: TransitionGroupProps;
-  hoverTransition?: TransitionProps;
-  handle?: boolean | string;
-};
-
+// N.b. moving this type to types.ts will cause a compiler error.
 export type ArrangeableProps<T> = {
   options?: ArrangeableOptions;
   list: T[];
   // Can we use an inferred key here, as in keyof PayloadType? It throws weird errors below.
   listKey?: string;
-  identifier?: DropTargetIdentifier;
+  identifier?: TargetIdentifier;
   meta?: any;
-  group?: DropTargetIdentifier;
-  targets?: DropTargetIdentifier | Array<DropTargetIdentifier>;
+  group?: TargetIdentifier;
+  targets?: TargetIdentifier | Array<TargetIdentifier>;
 };
-
-const props = withDefaults(defineProps<ArrangeableProps<PayloadType>>(), {
-  identifier: Symbol(),
-  group: undefined,
-  targets: undefined,
-  meta: undefined,
-  options: () => ({
-    hoverClass: "",
-    dropClass: "",
-    hoverTransitionClass: "",
-    hoverTransition: {},
-    pickedItemClass: "",
-    unpickedItemClass: "",
-    listTransition: {},
-  }),
-});
 
 type KeyItem = {
   payload: PayloadType;
   key: any;
 };
 
+const props = defineProps<ArrangeableProps<PayloadType>>();
+
+const defaultIdentifier = Symbol();
+const identifier = computed(() => props.identifier ?? defaultIdentifier);
+
+const defaultOptions: ArrangeableOptions = {
+  defaultItemClass: "",
+  pickedItemClass: "arrangeable-list__invisible",
+  listTransition: {
+    moveClass: "arrangeable-list__transition-all",
+    leaveActiveClass: "arrangeable-list__absolute",
+  },
+  hoverTransitionClass: "arrangeable-list__transition-all-but-location",
+  hoverClass: "",
+  homingEffect: true,
+  handle: false,
+};
+const options = computed(() => {
+  return { ...defaultOptions, ...props.options };
+});
+const homingEffectClass = computed<string>(() => {
+  if (
+    typeof options.value.homingEffect === "boolean" &&
+    options.value.homingEffect
+  )
+    return "arrangeable-list__homing-effect";
+  return options.value.homingEffect || "";
+});
+
+const pointer = usePointer();
 const { movingItem, isMoving: isHovering } = useMovingItem<PayloadType>();
+
 const hoverElement = ref<HTMLElement>();
 const listElement = ref<HTMLElement>();
+let offsetX: number = 0;
+let offsetY: number = 0;
+let originItemBoundingBox: DOMRect | undefined;
 
 // https://github.com/vuejs/core/issues/2136#issuecomment-908269949
 const keyItemsList = ref<KeyItem[]>([]) as Ref<KeyItem[]>;
@@ -102,11 +105,11 @@ const emit = defineEmits<{
  * triggered when the mouse cursor enters a list item while dragging something.
  * @param index: index of the item hovered over.
  */
-const hoverOverItem = (target: HTMLElement, index: number) => {
+const hoverOverItem = (index: number) => {
   enterList();
   if (
     !movingItem.value ||
-    movingItem.value?.destination?.identifier !== props.identifier ||
+    movingItem.value?.destination?.identifier !== identifier.value ||
     isHovering(arrangedItems.value[index])
   ) {
     return;
@@ -151,7 +154,7 @@ const leaveList = () => {
     if (itemIndex >= 0) {
       keyItemsList.value.splice(itemIndex, 1);
     }
-    if (movingItem.value.destination?.identifier == props.identifier) {
+    if (movingItem.value.destination?.identifier === identifier.value) {
       movingItem.value.destination = movingItem.value.origin;
     }
   }
@@ -160,11 +163,11 @@ const leaveList = () => {
 const enterList = () => {
   if (
     movingItem.value &&
-    (movingItem.value.dropTargets.includes(props.identifier) ||
+    (movingItem.value.dropTargets.includes(identifier.value) ||
       (props.group && movingItem.value.dropTargets.includes(props.group)))
   ) {
     movingItem.value.destination = {
-      identifier: props.identifier,
+      identifier: identifier.value,
       type: "list",
       listItems: arrangedItems.value,
       meta: props.meta,
@@ -172,12 +175,23 @@ const enterList = () => {
   }
 };
 
-let offsetX: number = 0;
-let offsetY: number = 0;
+const applyClasses = (element: HTMLElement | undefined, classes: string) => {
+  if (!element) return;
+  classes.split(" ").forEach((className) => {
+    if (className) element.classList.add(className);
+  });
+};
+
+const removeClasses = (element: HTMLElement | undefined, classes: string) => {
+  if (!element) return;
+  classes.split(" ").forEach((className) => {
+    if (className) element.classList.remove(className);
+  });
+};
 
 const handleName = computed(() => {
-  return typeof props.options.handle === "string"
-    ? props.options.handle
+  return typeof options.value.handle === "string"
+    ? options.value.handle
     : "handle";
 });
 
@@ -186,7 +200,7 @@ const liftItem = (
   { key, payload }: KeyItem
 ) => {
   if (
-    !!props.options.handle &&
+    options.value.handle &&
     (target as HTMLElement)?.getAttribute("name") !== handleName.value
   )
     return;
@@ -198,8 +212,8 @@ const liftItem = (
   offsetX = pointer.x.value - originItemBoundingBox.x;
   offsetY = pointer.y.value - originItemBoundingBox.y;
   const originIndex = arrangedItems.value.indexOf(payload);
-  const origin: DropTarget<PayloadType> = {
-    identifier: props.identifier,
+  const origin: Target<PayloadType> = {
+    identifier: identifier.value,
     type: "list",
     listItems: arrangedItems.value,
     index: originIndex,
@@ -209,39 +223,40 @@ const liftItem = (
     hoverElement,
     origin: origin,
     destination: { ...origin, meta: props.meta },
-    dropTargets: [props.targets ?? props.group ?? props.identifier].flat(),
+    dropTargets: [props.targets ?? props.group ?? identifier.value].flat(),
     key,
   };
-  setLandingZone();
+
+  nextTick(() => {
+    setHomingArea();
+    applyClasses(hoverElement.value, options.value.hoverTransitionClass || "");
+    applyClasses(hoverElement.value, options.value.hoverClass || "");
+    useEventListener(
+      hoverElement.value,
+      "transitionend",
+      () => {
+        removeClasses(
+          hoverElement.value,
+          options.value.hoverTransitionClass || ""
+        );
+      },
+      { once: true }
+    );
+  });
+
   emit("liftItem", toRaw(movingItem.value));
 };
 
 /**
  * Set coordinates of the snap-target element as CSS-variables to use in dynamic classes
  **/
-const setLandingZone = () => {
-  landingZone.value =
+const setHomingArea = () => {
+  homingArea.value =
     document
       .getElementById("arrangeable-list-target-element")
       ?.getBoundingClientRect() ?? originItemBoundingBox;
-  // if (!landingZone) return;
-  // for (const property of [
-  //   "x",
-  //   "y",
-  //   "width",
-  //   "height",
-  //   "top",
-  //   "right",
-  //   "bottom",
-  //   "left",
-  // ] as const) {
-  //   listElement.value?.style.setProperty(
-  //     `--landingzone-${property}`,
-  //     landingZone[property] + "px"
-  //   );
-  // }
 };
-const landingZone = ref<DOMRect | undefined>();
+const homingArea = ref<DOMRect | undefined>();
 /**
  * dropItem happens when an element from this ArrangedList is dropped somewhere.
  * This is NOT triggered when an element from another list is dropped onto this one.
@@ -249,42 +264,59 @@ const landingZone = ref<DOMRect | undefined>();
 const dropItem = () => {
   if (
     movingItem.value === undefined ||
-    movingItem.value.origin.identifier !== props.identifier
+    movingItem.value.origin.identifier !== identifier.value
   )
     return;
 
-  nextTick(() => setLandingZone());
+  let transitionDropEffect = false;
+
+  nextTick(() => {
+    setHomingArea();
+    applyClasses(hoverElement.value, options.value.hoverTransitionClass || "");
+    if (homingEffectClass.value)
+      applyClasses(hoverElement.value, homingEffectClass.value);
+    // check if the element has a transition effect
+    let transitionProperty = getComputedStyle(
+      hoverElement.value as HTMLElement
+    ).transitionProperty;
+    let transitionDuration = getComputedStyle(
+      hoverElement.value as HTMLElement
+    ).transitionDuration;
+    if (
+      transitionProperty !== "none" &&
+      transitionDuration
+        .split(", ")
+        .some((duration) => parseFloat(duration) > 0)
+    ) {
+      transitionDropEffect = true;
+    }
+    removeClasses(hoverElement.value, options.value.hoverClass || "");
+    if (transitionDropEffect)
+      useEventListener(
+        hoverElement.value,
+        "transitionend",
+        () => (movingItem.value = undefined),
+        { once: true }
+      );
+    else movingItem.value = undefined;
+  });
 
   emit("dropItem", toRaw(movingItem.value));
-
-  // this is required for dynamic classes; no way around yet using standard vue transition classes which are fixed.
-  props.options.dropClass
-    ?.split(" ")
-    .forEach(
-      (className) => className && hoverElement.value?.classList.add(className)
-    );
 
   // repopulation is needed in case the drop event did not trigger a props change
   // otherwise the dropped item disappears.
   populateList(props.list);
-  nextTick(() => (movingItem.value = undefined));
 };
 
-const pointer = usePointer();
 useEventListener(document, "pointerup", dropItem);
-
-let originItemBoundingBox: DOMRect | undefined;
 
 const beforeKey = Symbol();
 const afterKey = Symbol();
-
-const itemInTransit = ref<PayloadType | undefined>();
 
 onMounted(() => {
   populateList(props.list);
   document.body.style.touchAction = "none";
 });
-const { log } = console;
 </script>
 
 <template>
@@ -307,12 +339,12 @@ const { log } = console;
             : undefined
         "
         :class="
-          isHovering(item.payload) || itemInTransit === item.payload
+          isHovering(item.payload)
             ? options.pickedItemClass
-            : options.unpickedItemClass
+            : options.defaultItemClass
         "
         @pointerdown.left.stop="liftItem($event, item)"
-        @pointer-enter="(target) => hoverOverItem(target, index)"
+        @pointer-enter="hoverOverItem(index)"
       >
         <slot
           :item="item.payload as PayloadType"
@@ -321,34 +353,56 @@ const { log } = console;
       </PointerElement>
       <PointerElement
         :key="afterKey"
-        @pointer-enter="(target) => hoverOverItem(target, keyItemsList.length)"
+        @pointer-enter="hoverOverItem(keyItemsList.length)"
       >
         <slot name="after" :arrangedItems="arrangedItems" />
       </PointerElement>
     </TransitionGroup>
     <Transition
+      tag="div"
       ref="hoverElement"
-      v-bind="options.hoverTransition"
-      @before-enter="itemInTransit = movingItem?.payload"
-      @after-leave="itemInTransit = undefined"
-      :class="options.hoverClass"
+      v-if="movingItem && movingItem.origin.identifier === identifier"
       :style="{
         left: pointer.x.value - offsetX + 'px',
         top: pointer.y.value - offsetY + 'px',
         width: originItemBoundingBox?.width + 'px',
         height: originItemBoundingBox?.height + 'px',
-        '--landingzone-top': landingZone?.top + 'px',
-        '--landingzone-left': landingZone?.left + 'px',
-        '--landingzone-right': landingZone?.right + 'px',
-        '--landingzone-bottom': landingZone?.bottom + 'px',
-        '--landingzone-width': landingZone?.width + 'px',
-        '--landingzone-height': landingZone?.height + 'px',
+        '--landingzone-top': homingArea?.top + 'px',
+        '--landingzone-left': homingArea?.left + 'px',
+        '--landingzone-right': homingArea?.right + 'px',
+        '--landingzone-bottom': homingArea?.bottom + 'px',
+        '--landingzone-width': homingArea?.width + 'px',
+        '--landingzone-height': homingArea?.height + 'px',
       }"
       style="z-index: 100000000; position: absolute"
     >
-      <div v-if="movingItem && movingItem.origin.identifier === identifier">
-        <slot :item="movingItem.payload" />
-      </div>
+      <slot :item="movingItem.payload" />
     </Transition>
   </PointerElement>
 </template>
+
+<style>
+/* well-known tailwind classes, to be used as sensible defaults */
+.arrangeable-list__transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.arrangeable-list__transition-all-but-location {
+  transition-property: opacity, transform, box-shadow, background-color,
+    border-color, color, fill, stroke, padding, margin;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.arrangeable-list__absolute {
+  position: absolute;
+}
+.arrangeable-list__invisible {
+  visibility: hidden;
+}
+.arrangeable-list__homing-effect {
+  transition-property: all;
+  top: var(--landingzone-top) !important;
+  left: var(--landingzone-left) !important;
+}
+</style>

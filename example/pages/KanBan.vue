@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { Ref, ref } from "vue";
+import { ref } from "vue";
 import KanBanList from "./components/KanBanList.vue";
 import {
   ArrangeableList,
   DropZone,
-  useMovingItem,
   type MovingItem,
   type DropTargetIdentifier,
 } from "../../src";
@@ -18,8 +17,6 @@ export type ListType = {
   dropZone: DropTargetIdentifier;
   color: string;
 };
-
-const { movingItem } = useMovingItem<ItemType>();
 
 const data = [
   "Build app",
@@ -80,21 +77,41 @@ const dropItem = (item: MovingItem<ItemType>) => {
   }
 };
 
+const addList = (event: Event) => {
+  const name = (event.target as HTMLInputElement)?.value;
+  lists.value.push({
+    name,
+    identifier: Symbol(),
+    items: [] as ItemType[],
+    dropZone: dropTargets,
+    color: newListColor.value,
+  });
+  newListColor.value = randomColorMap();
+  (event.target as HTMLInputElement).value = "";
+};
+
+const dropList = (list: MovingItem<ListType>) => {
+  if (list.destination === undefined) {
+    return;
+  }
+  const originList = lists.value.splice(list.origin.index as number, 1)[0];
+  if (list.destination.index !== undefined) {
+    lists.value = [
+      ...lists.value.slice(0, list.destination.index),
+      originList,
+      ...lists.value.slice(list.destination.index),
+    ];
+  } else {
+    lists.value.push(originList);
+  }
+};
+
 const arrangeableOptions = {
   hoverClass:
     "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-110",
-  pickedItemClass: "invisible",
-  hoverTransition: {
-    enterFromClass: "!opacity-100 !scale-100 drop-shadow-none",
-    enterActiveClass:
-      "transition-opacity transition-shadow transition-transform",
-  },
-  listTransition: {
-    moveClass: "transition-all duration-1000 bg-red-400",
-    // necessary for the list to move smoothly:
-    leaveActiveClass: "absolute",
-  },
 };
+
+const newListColor = ref(randomColorMap());
 </script>
 
 <template>
@@ -104,9 +121,9 @@ const arrangeableOptions = {
       class="flex flex-grow flex-row items-start overflow-auto"
       :options="{
         ...arrangeableOptions,
-        name: 'columns',
         handle: 'listHandle',
       }"
+      @drop-item="dropList"
     >
       <template #default="{ item: list }">
         <div
@@ -125,11 +142,25 @@ const arrangeableOptions = {
           <KanBanList
             :list="list"
             :group="dropTargets"
-            :trashBin="trashBin"
-            :arrangeableOptions="arrangeableOptions"
+            :trash-bin="trashBin"
+            :arrangeable-options="arrangeableOptions"
             @add-item="addItem"
             @drop-item="dropItem"
           />
+        </div>
+      </template>
+      <template #after>
+        <div
+          class="m-1 h-fit w-60 rounded-md border-2 border-black"
+          :style="{ backgroundColor: newListColor[100] }"
+        >
+          <div class="flex border-none p-2 text-2xl font-bold">
+            <input
+              class="w-full bg-transparent"
+              @change="addList"
+              placeholder="New list"
+            />
+          </div>
         </div>
       </template>
     </ArrangeableList>

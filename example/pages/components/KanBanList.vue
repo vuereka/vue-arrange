@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ArrangeableOptions, ArrangeableList } from "../../../src";
-import { DropTargetIdentifier, MovingItem } from "../../../src/types";
+import { TargetIdentifier, MovingItem } from "../../../src/types";
 import { type ListType, ItemType } from "../KanBan.vue";
 import { useMovingItem } from "../../../src";
 
 defineProps<{
   list: ListType;
-  group: DropTargetIdentifier;
-  trashBin: DropTargetIdentifier;
+  group: TargetIdentifier;
+  trashBin: TargetIdentifier;
   arrangeableOptions: ArrangeableOptions;
 }>();
 
@@ -16,7 +16,7 @@ const emit = defineEmits<{
   (e: "drop-item", item: MovingItem<ItemType>): void;
 }>();
 
-const { movingItem } = useMovingItem<ItemType>();
+const { movingItem, movingItemCanTarget } = useMovingItem<ItemType>();
 
 const addItem = ($event: InputEvent, listIdentifier: symbol) => {
   if (!$event.target || !listIdentifier) return;
@@ -32,15 +32,7 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
     :group="group"
     :options="{
       ...arrangeableOptions,
-      listTransition: {
-        moveClass: 'transition-all bg-green-500 duration-500',
-      },
       handle: 'cardHandle',
-      name: 'lists',
-      dropClass:
-        movingItem?.destination?.identifier === trashBin
-          ? 'transition-all scale-0 opacity-100 !top-[var(--landingzone-top)] !left-[var(--landingzone-left)] '
-          : 'transition-all opacity-100 scale-100 drop-shadow-none !top-[var(--landingzone-top)] !left-[var(--landingzone-left)]',
     }"
     @drop-item="emit('drop-item', movingItem as MovingItem<ItemType>)"
   >
@@ -56,8 +48,11 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
     <template #before="{ arrangedItems }">
       <div
         ref="list.dropZone"
-        v-if="arrangedItems.length === 0 && movingItem"
-        class="m-1 h-12 rounded border-2 border-dashed border-black"
+        v-if="
+          arrangedItems.length === 0 &&
+          movingItemCanTarget([list.identifier, group])
+        "
+        class="qwerty m-1 h-12 rounded border-2 border-dashed border-black"
         :style="{ backgroundColor: list.color[200] }"
       />
     </template>

@@ -3,7 +3,7 @@ import ArrangeableList, {
   type ArrangeableProps,
 } from "./ArrangeableList.vue";
 import DropZone from "./DropZone.vue";
-import { type MovingItem, DropTargetIdentifier, DropTarget } from "./types";
+import { type MovingItem, TargetIdentifier, Target } from "./types";
 import { useMovingItem } from "./useMovingItem";
 
 export {
@@ -13,6 +13,6 @@ export {
   DropZone,
   useMovingItem,
   type MovingItem,
-  type DropTargetIdentifier,
-  type DropTarget,
+  type TargetIdentifier as DropTargetIdentifier,
+  type Target as DropTarget,
 };

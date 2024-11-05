@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { useMovingItem } from "./useMovingItem.js";
 import PointerElement from "./PointerElement.vue";
-import { DropTargetIdentifier, type MovingItem } from "./types";
+import { TargetIdentifier, type MovingItem } from "./types";
 import { ref, toRaw } from "vue";
 
 type ArrangeableOptions = {
@@ -10,8 +10,8 @@ type ArrangeableOptions = {
 
 type Props = {
   options?: ArrangeableOptions;
-  identifier: DropTargetIdentifier;
-  group?: DropTargetIdentifier;
+  identifier: TargetIdentifier;
+  group?: TargetIdentifier;
 };
 
 const props = withDefaults(defineProps<Props>(), {
