@@ -99,9 +99,6 @@ watch(() => props.list, populateList, { deep: true });
 const emit = defineEmits<{
   (e: "liftItem", item: MovingItem<PayloadType>): void;
   (e: "dropItem", item: MovingItem<PayloadType>): void;
-  (e: "hoverOverItem", item: MovingItem<PayloadType>): void;
-  (e: "enterList", item: MovingItem<PayloadType>): void;
-  (e: "leaveList", item: MovingItem<PayloadType>): void;
 }>();
 
 /**
@@ -116,7 +113,6 @@ const hoverOverItem = (index: number) => {
   ) {
     return;
   }
-  emit("hoverOverItem", toRaw(movingItem.value));
 
   // if the dragging item does not appear in the list, add it
   if (
@@ -356,6 +352,7 @@ onMounted(() => {
             ? options.pickedItemClass
             : options.defaultItemClass
         "
+        @touchstart.left.prevent="liftItem($event, item)"
         @pointerdown.left.stop="liftItem($event, item)"
         @pointer-enter="hoverOverItem(index)"
       >
@@ -394,7 +391,7 @@ onMounted(() => {
   </PointerElement>
 </template>
 
-<style>
+<style scoped>
 /* well-known tailwind classes, to be used as sensible defaults */
 .arrangeable-list__transition-all {
   transition-property: all;

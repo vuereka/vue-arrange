@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import KanBanList from "./components/KanBanList.vue";
-import {
-  ArrangeableList,
-  DropZone,
-  useMovingItem,
-  type MovingItem,
-} from "../../src";
+import { ArrangeableList, DropZone, type MovingItem } from "../../src";
 import { randomColorMap } from "../colors";
 
 export type ItemType = {
@@ -21,8 +16,6 @@ export type ListType = {
   color: string;
   index: number;
 };
-
-const { movingItem } = useMovingItem<ItemType | ListType>();
 
 const itemData = [
   "Build app",
@@ -56,14 +49,13 @@ const items = ref<ItemType[]>(
   }))
 );
 
-const addItem = (eventTarget: HTMLInputElement, listId: symbol) => {
+const addItem = (description, listId: symbol) => {
   items.value.push({
-    description: eventTarget.value,
+    description,
     id: Symbol(),
     listId,
     index: Math.max(...items.value.map(({ index }) => index)) + 1,
   });
-  eventTarget.value = "";
 };
 
 const addList = ({ target }: { target: HTMLInputElement }) => {
@@ -116,7 +108,6 @@ const newListColor = ref(randomColorMap());
     <ArrangeableList
       :list="lists"
       identifier="lists"
-      list-key="id"
       class="flex flex-grow flex-row items-start overflow-auto"
       :options="{
         ...arrangeableOptions,
@@ -131,7 +122,9 @@ const newListColor = ref(randomColorMap());
           :style="{ backgroundColor: list.color[100] }"
         >
           <div class="flex border-none p-2 text-2xl font-bold">
-            <div name="listHandle" class="mr-2 cursor-grab">&#65049;</div>
+            <div name="listHandle" class="mr-2 cursor-grab select-none">
+              &#65049;
+            </div>
             <input
               class="w-full bg-transparent"
               @change="$event => list.name = ($event.target as HTMLInputElement)?.value"

@@ -30,7 +30,6 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
   <ArrangeableList
     :list="items"
     :identifier="list.id"
-    list-key="id"
     :group="group"
     :options="{
       ...arrangeableOptions,
@@ -43,12 +42,10 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
         class="m-1 flex items-center whitespace-normal break-words rounded border-2 border-black p-2 text-xl"
         :style="{ backgroundColor: list.color[300] }"
       >
-        <div name="cardHandle" class="mr-2 cursor-grab">&#65049;</div>
-        <input
-          class="w-full bg-transparent"
-          @change="$event => item.description = ($event.target as HTMLInputElement)?.value"
-          :value="item.description"
-        />
+        <div name="cardHandle" class="mr-2 cursor-grab select-none">
+          &#65049;
+        </div>
+        {{ item.description }}
       </div>
     </template>
     <template #after>

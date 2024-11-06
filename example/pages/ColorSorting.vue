@@ -54,7 +54,7 @@ const reset = () => {
       v-slot="{ item }"
     >
       <div
-        class="m-2 flex h-10 w-96 cursor-grab justify-center rounded-lg p-2 hover:drop-shadow-lg"
+        class="m-2 flex h-10 w-96 cursor-grab select-none justify-center rounded-lg p-2 hover:drop-shadow-lg"
         :style="{ backgroundColor: item.color }"
       >
         {{ item.name }}
