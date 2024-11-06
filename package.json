@@ -7,7 +7,7 @@
   "homepage": "https://github.com/vuereka/vue-arrange",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vuereka/vue-arrange"
+    "url": "git+https://github.com/vuereka/vue-arrange.git"
   },
   "keywords": [
     "vue3",
