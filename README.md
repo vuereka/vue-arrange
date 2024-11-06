@@ -41,6 +41,18 @@ npm add vue-arrange
 
 #### **Props:**
 
+- **list**: `<PayloadType[]>` list of items to arrange.
+- **listKey**: `<key of PayloadType>`, optional;
+  - Unique identifier for items.
+  - If not given, one gets automatically generated.
+- **identifier**: `<TargetIdentifier>`, optional
+  - Unique name of the list. Defaults to an unnamed symbol.
+- **group**: `<TargetIdentifier>`, optional
+  - Group the list belongs to. Items can be moved across member lists of this group.
+- **targets**: `<TargetIdentifier | TargetIdentifier[]>`, optional
+  - By supplying one or more targets, items from this list can only be moved to those groups/lists.
+- **meta**: <any>, optional
+  - any information you wish to send along with items that get picked up.
 - **options**: `<ArrangeableOptions>`, optional; options passed to the ArrangeableList.
   - **defaultItemClass**: `<string>`
     - css classes to place on all list items except the lifted one.
@@ -61,18 +73,6 @@ npm add vue-arrange
     - If `false`, no homing effect.
   - **handle**: `<boolean | string>`, default `false`
     - Indicate if the elements should be only dragged by a handle element. If `true`, any descendant elements with property: `name="handle"` are used as a handle. If `string` the name should be set to that string.
-- **list**: `<PayloadType[]>` list of items to arrange.
-- **listKey**: `<key of PayloadType>`, optional;
-  - Unique identifier for items.
-  - If not given, one gets automatically generated.
-- **identifier**: `<TargetIdentifier>`, optional
-  - Unique name of the list. Defaults to an unnamed symbol.
-- **group**: `<TargetIdentifier>`, optional
-  - Group the list belongs to. Items can be moved across member lists of this group.
-- **targets**: `<TargetIdentifier | TargetIdentifier[]>`, optional
-  - By supplying one or more targets, items from this list can only be moved to those groups/lists.
-- **meta**: <any>, optional
-  - any information you wish to send along with items that get picked up.
 
 See [ArrangeableProps type](#type-arrangeablepropspayloadtype) below
 
@@ -105,60 +105,13 @@ See [ArrangeableProps type](#type-arrangeablepropspayloadtype) below
     - By adding one or more `targets` (see [options](#type-arrangeableoptions) below), items can be made to move only to lists with `identifier` or `group` listed in `targets`.
 - It can be used both by touch devices, mouse and any other type of pointer, as it uses PointerEvents. This is still experimental. It puts `touch-action: 'none'` css class on the document, to prevent interference from the browser gestures.
 
-#### **Example**
-
-Simple example without typescript.
-
-```vue
-<script setup>
-import { ref } from "vue";
-import { ArrangeableList } from "vue-arrange";
-const twColors = ref([
-  { name: "red", color: "#fecaca" },
-  { name: "orange", color: "#fed7aa" },
-  { name: "amber", color: "#fde68a" },
-  { name: "yellow", color: "#fef08a" },
-]);
-
-const dropItem = ({ destination }) => {
-  twColors.value = destination.list;
-};
-</script>
-
-<template>
-  <ArrangeableList
-    :list="twColors"
-    :options="{
-      hoverClass: 'hover',
-    }"
-    @drop-item="dropItem"
-    v-slot="{ item }"
-  >
-    <div
-      style="height: 40px;width: 160px;border-radius: 8px;"
-      :style="item.color"
-    >
-      {{ item.name }}
-    </div>
-  </ArrangeableList>
-</template>
-
-<style>
-.hover {
-  opacity: 0.65;
-}
-</style>
-```
-
-See [example folder](./example/) for a complete example using typescript and tailwindcss.
-
-### Composable `useMovingItem<T>()`
+### Composable `useMovingItem<PayloadType>()`
 
 Exposes:
 
-- `movingItem`, of type `MovingItem<T>`; the item currently being dragged around by the user from any list. If using typescript, it should use the same type `T` as the list items of the `ArrangeableList`.
-- `isMoving(item: T) => boolean`; test whether `item` is currently being dragged.
-- `movingItemCanTarget(targets: Array<TargetIdentifier | undefined>) tests whether the movingItem has one of the targets given.
+- `movingItem`, of ref-type `MovingItem<PayloadType> | undefined`; the item currently being dragged around by the user from any list.
+- `isMoving(item: PayloadType) => boolean`; test whether `item` is currently being dragged.
+- `movingItemCanTarget(targets: Array<TargetIdentifier | undefined>) => boolean` tests whether the movingItem has one of the targets given.
 
 ```typescript
 const { movingItem, isMoving } = useMovingItem<MyObjectType>();
@@ -249,3 +202,50 @@ type ArrangeableOptions = {
   left: var(--landingzone-left) !important;
 }
 ```
+
+## **Example usage**
+
+Simple example without typescript.
+
+```vue
+<script setup>
+import { ref } from "vue";
+import { ArrangeableList } from "vue-arrange";
+const twColors = ref([
+  { name: "red", color: "#fecaca" },
+  { name: "orange", color: "#fed7aa" },
+  { name: "amber", color: "#fde68a" },
+  { name: "yellow", color: "#fef08a" },
+]);
+
+const dropItem = ({ destination }) => {
+  twColors.value = destination.list;
+};
+</script>
+
+<template>
+  <ArrangeableList
+    :list="twColors"
+    :options="{
+      hoverClass: 'hover',
+    }"
+    @drop-item="dropItem"
+    v-slot="{ item }"
+  >
+    <div
+      style="height: 40px;width: 160px;border-radius: 8px;"
+      :style="item.color"
+    >
+      {{ item.name }}
+    </div>
+  </ArrangeableList>
+</template>
+
+<style>
+.hover {
+  opacity: 0.65;
+}
+</style>
+```
+
+See [example folder](./example/) for a complete example using typescript and tailwindcss.
