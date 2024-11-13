@@ -14,11 +14,7 @@ Features:
 - Interactive elements such trash bin.
 - Utility-class (Tailwind) friendly
 - Completely built in Typescript. Supports generic items for any type of list.
-- lightweight on dependencies:
-
-  - dist/style.css 0.60 kB │ gzip: 0.27 kB
-  - dist/vue-arrange.es.js 17.15 kB │ gzip: 5.18 kB
-  - dist/vue-arrange.umd.js 12.48 kB │ gzip: 4.42 kB
+- lightweight on dependencies
 
 ## Usage
 
@@ -176,7 +172,9 @@ type ArrangeableOptions = {
 };
 ```
 
-## Internal CSS classes used for defaults:
+## CSS classes used for defaults
+
+These classes are shipped to be used as defaults:
 
 ```css
 .arrangeable-list__transition-all {
@@ -201,6 +199,15 @@ type ArrangeableOptions = {
   top: var(--landingzone-top) !important;
   left: var(--landingzone-left) !important;
 }
+```
+
+To include them in a project, add `vue-arrange` to the css section of the vue/nuxt config like this:
+
+```js
+  css: [
+    //...
+    'vue-arrange/dist/vue-arrange.css',
+  ],
 ```
 
 ## **Example usage**

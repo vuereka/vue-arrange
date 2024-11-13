@@ -3,10 +3,12 @@
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["es6", "esnext", "ES2020", "DOM", "DOM.Iterable"],
-    "outDir": "dist",
     "declaration": true,
     "useDefineForClassFields": true,
     "skipLibCheck": true,
+    "declarationDir": "./dist", // Specifies output directory for .d.ts files
+    "emitDeclarationOnly": true, // Emit only declaration files
+    "esModuleInterop": true,
 
     /* Bundler mode */
     "moduleResolution": "node",
@@ -14,7 +16,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
     "jsx": "preserve",
 
     /* Linting */
@@ -23,13 +24,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "main.ts",
-    "example/vite-env.d.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

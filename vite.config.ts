@@ -2,6 +2,7 @@ import { resolve } from "path";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
+const libraryName = "vue-arrange";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   if (mode === "example") {
@@ -21,8 +22,8 @@ export default defineConfig(({ mode }) => {
       build: {
         lib: {
           entry: resolve(__dirname, "src/index.ts"),
-          name: "vue-arrange",
-          fileName: (format) => `vue-arrange.${format}.js`,
+          name: libraryName,
+          fileName: (format) => `${libraryName}.${format}.js`,
         },
         rollupOptions: {
           external: ["vue"],
@@ -32,6 +33,7 @@ export default defineConfig(({ mode }) => {
             globals: {
               vue: "Vue",
             },
+            assetFileNames: `${libraryName}.[ext]`,
           },
         },
       },

@@ -69,7 +69,7 @@ let originItemBoundingBox: DOMRect | undefined;
 // https://github.com/vuejs/core/issues/2136#issuecomment-908269949
 const keyItemsList = ref<KeyItem[]>([]) as Ref<KeyItem[]>;
 const arrangedItems = computed(
-  () => keyItemsList.value.map(({ payload }) => payload) || []
+  () => keyItemsList.value.map(({ payload }) => payload) || [],
 );
 
 function populateList(listData: PayloadType[]) {
@@ -78,7 +78,7 @@ function populateList(listData: PayloadType[]) {
   listData.forEach((item: PayloadType) => {
     const keyItem = props.listKey
       ? keyItemsList.value.find(
-          ({ key }) => key === item[props.listKey as keyof PayloadType]
+          ({ key }) => key === item[props.listKey as keyof PayloadType],
         )
       : keyItemsList.value.find(({ payload }) => item === payload);
     if (keyItem) newList.push({ ...keyItem, payload: item });
@@ -117,7 +117,7 @@ const hoverOverItem = (index: number) => {
   // if the dragging item does not appear in the list, add it
   if (
     keyItemsList.value.findIndex(
-      ({ payload }) => payload === movingItem.value?.payload
+      ({ payload }) => payload === movingItem.value?.payload,
     ) === -1
   ) {
     keyItemsList.value.splice(index, 0, {
@@ -128,7 +128,7 @@ const hoverOverItem = (index: number) => {
   // else move it
   else {
     const moverIndex = keyItemsList.value.findIndex(
-      ({ payload }) => payload === movingItem.value?.payload
+      ({ payload }) => payload === movingItem.value?.payload,
     );
     keyItemsList.value =
       moverIndex < index
@@ -204,7 +204,7 @@ const handleName = computed(() => {
 
 const liftItem = (
   { target, currentTarget }: PointerEvent,
-  { key, payload }: KeyItem
+  { key, payload }: KeyItem,
 ) => {
   if (
     options.value.handle &&
@@ -244,10 +244,10 @@ const liftItem = (
       () => {
         removeClasses(
           hoverElement.value,
-          options.value.hoverTransitionClass || ""
+          options.value.hoverTransitionClass || "",
         );
       },
-      { once: true }
+      { once: true },
     );
   });
 
@@ -284,10 +284,10 @@ const dropItem = () => {
       applyClasses(hoverElement.value, homingEffectClass.value);
     // check if the element has a transition effect
     let transitionProperty = getComputedStyle(
-      hoverElement.value as HTMLElement
+      hoverElement.value as HTMLElement,
     ).transitionProperty;
     let transitionDuration = getComputedStyle(
-      hoverElement.value as HTMLElement
+      hoverElement.value as HTMLElement,
     ).transitionDuration;
     if (
       transitionProperty !== "none" &&
@@ -303,7 +303,7 @@ const dropItem = () => {
         hoverElement.value,
         "transitionend",
         () => (movingItem.value = undefined),
-        { once: true }
+        { once: true },
       );
     else movingItem.value = undefined;
   });
@@ -391,7 +391,7 @@ onMounted(() => {
   </PointerElement>
 </template>
 
-<style scoped>
+<style>
 /* well-known tailwind classes, to be used as sensible defaults */
 .arrangeable-list__transition-all {
   transition-property: all;
