@@ -43,8 +43,9 @@ const defaultOptions: ArrangeableOptions = {
   hoverClass: "",
   homingEffect: true,
   handle: false,
+  liftDelay: 0,
 };
-const options = computed(() => {
+const options = computed<ArrangeableOptions>(() => {
   return { ...defaultOptions, ...props.options };
 });
 const homingEffectClass = computed<string>(() => {
@@ -95,6 +96,19 @@ function populateList(listData: PayloadType[]) {
 }
 
 watch(() => props.list, populateList, { deep: true });
+watch(
+  () => movingItem.value?.destination,
+  (newDestination, previousDestination) => {
+    if (
+      newDestination?.identifier !== identifier.value &&
+      previousDestination?.identifier === identifier.value
+    ) {
+      keyItemsList.value = keyItemsList.value.filter(
+        ({ payload }) => payload !== movingItem.value?.payload,
+      );
+    }
+  },
+);
 
 const emit = defineEmits<{
   (e: "liftItem", item: MovingItem<PayloadType>): void;
@@ -202,19 +216,8 @@ const handleName = computed(() => {
     : "handle";
 });
 
-const liftItem = (
-  { target, currentTarget }: PointerEvent,
-  { key, payload }: KeyItem,
-) => {
-  if (
-    options.value.handle &&
-    (target as HTMLElement)?.getAttribute("name") !== handleName.value
-  )
-    return;
-
-  originItemBoundingBox = (
-    currentTarget as HTMLElement
-  )?.getBoundingClientRect();
+const liftItem = (currentTarget: HTMLElement, { key, payload }: KeyItem) => {
+  originItemBoundingBox = currentTarget.getBoundingClientRect();
 
   offsetX = pointer.x.value - originItemBoundingBox.x;
   offsetY = pointer.y.value - originItemBoundingBox.y;
@@ -252,6 +255,24 @@ const liftItem = (
   });
 
   emit("liftItem", toRaw(movingItem.value));
+};
+
+let pickupTimer: ReturnType<typeof setTimeout>;
+const pickupItem = (event: PointerEvent, item: KeyItem) => {
+  const { target, currentTarget } = event;
+  if (
+    options.value.handle &&
+    (target as HTMLElement)?.getAttribute("name") !== handleName.value
+  )
+    return;
+
+  pickupTimer = setTimeout(() => {
+    liftItem(currentTarget as HTMLElement, item);
+  }, options.value.liftDelay);
+};
+
+const cancelPickup = () => {
+  clearTimeout(pickupTimer);
 };
 
 /**
@@ -298,14 +319,16 @@ const dropItem = () => {
       transitionDropEffect = true;
     }
     removeClasses(hoverElement.value, options.value.hoverClass || "");
-    if (transitionDropEffect)
+    if (transitionDropEffect) {
       useEventListener(
         hoverElement.value,
         "transitionend",
         () => (movingItem.value = undefined),
         { once: true },
       );
-    else movingItem.value = undefined;
+    } else {
+      movingItem.value = undefined;
+    }
   });
   emit("dropItem", toRaw(movingItem.value));
 
@@ -313,7 +336,10 @@ const dropItem = () => {
   // otherwise the dropped item disappears.
   populateList(props.list);
 };
-useEventListener(document, "pointerup", dropItem);
+useEventListener(document, "pointerup", () => {
+  cancelPickup();
+  dropItem();
+});
 
 const beforeKey = Symbol();
 const afterKey = Symbol();
@@ -352,8 +378,8 @@ onMounted(() => {
             ? options.pickedItemClass
             : options.defaultItemClass
         "
-        @touchstart.left.prevent="liftItem($event, item)"
-        @pointerdown.left.stop="liftItem($event, item)"
+        @touchstart.left.prevent="pickupItem($event, item)"
+        @pointerdown.left.stop="pickupItem($event, item)"
         @pointer-enter="hoverOverItem(index)"
       >
         <slot

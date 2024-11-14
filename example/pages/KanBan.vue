@@ -37,7 +37,7 @@ const lists = ref<ListType[]>(
     id: Symbol(name),
     color: randomColorMap(),
     index,
-  }))
+  })),
 );
 
 const items = ref<ItemType[]>(
@@ -46,7 +46,7 @@ const items = ref<ItemType[]>(
     id: Symbol(),
     listId: lists.value[Math.floor(Math.random() * listData.length)].id,
     index,
-  }))
+  })),
 );
 
 const addItem = (description, listId: symbol) => {
@@ -58,7 +58,8 @@ const addItem = (description, listId: symbol) => {
   });
 };
 
-const addList = ({ target }: { target: HTMLInputElement }) => {
+const addList = (event: Event) => {
+  const target = event.target as HTMLInputElement;
   lists.value.push({
     name: target.value,
     id: Symbol(target.value),
@@ -76,7 +77,7 @@ const dropItem = <T extends ListType | ItemType>(item: MovingItem<T>) => {
   // if the target is the trashbin, remove it
   if (item.destination.identifier === trashBin) {
     targetTable.value = targetTable.value.filter(
-      ({ id }) => id !== item.payload.id
+      ({ id }) => id !== item.payload.id,
     ) as typeof targetTable.value;
   }
   // else, add the element to the destination list
@@ -127,7 +128,10 @@ const newListColor = ref(randomColorMap());
             </div>
             <input
               class="w-full bg-transparent"
-              @change="$event => list.name = ($event.target as HTMLInputElement)?.value"
+              @change="
+                ($event) =>
+                  (list.name = ($event.target as HTMLInputElement)?.value)
+              "
               :value="list.name"
             />
           </div>

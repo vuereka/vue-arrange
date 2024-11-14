@@ -8,6 +8,7 @@ export type ArrangeableOptions = {
   hoverClass?: string;
   homingEffect?: string | boolean;
   handle?: boolean | string;
+  liftDelay?: number;
 };
 
 export type TargetIdentifier = string | number | symbol;
