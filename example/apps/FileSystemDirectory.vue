@@ -3,7 +3,7 @@ import ArrangeableList from "../../src/ArrangeableList.vue";
 import { MovingItem, useMovingItem } from "../../src";
 
 import { type TreeNode } from "./FileSystem.vue";
-import Disclosure from "./Disclosure.vue";
+import Disclosure from "./DisclosurePanel.vue";
 
 const { isMoving } = useMovingItem<TreeNode>();
 
@@ -26,7 +26,7 @@ const fileIcon = "📄";
 
 <template>
   <ArrangeableList
-    :list="toc.filter((node) => node.parent === directory)"
+      :list="toc.filter((node) => node.parent === directory)"
     :identifier="directory"
     group="directories"
     :options="{

@@ -1,7 +1,7 @@
 import { ref, type Ref } from "vue";
 import { TargetIdentifier, MovingItem } from "./types.js";
 
-const movingItem = ref<MovingItem<any> | undefined>(undefined);
+const movingItem = ref<MovingItem<unknown> | undefined>(undefined);
 
 export const useMovingItem = <PayloadType>() => {
   function isMoving(item: PayloadType) {

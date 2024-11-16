@@ -9,8 +9,8 @@ type List = {
   group: TargetIdentifier | undefined;
   stackLevel: number;
   pointerIsAbove: ComputedRef;
-  enterList: Function;
-  leaveList: Function;
+  enterList: () => void;
+  leaveList: () => void;
 };
 
 // an array of list identifiers and their identifying properties
@@ -46,8 +46,8 @@ export const useArrangeableLists = () => {
     group: TargetIdentifier | undefined,
     stackLevel: number,
     pointerIsAbove: ComputedRef<boolean>,
-    enterList: Function,
-    leaveList: Function,
+    enterList: () => void,
+    leaveList: () => void,
   ) {
     lists[identifier] = {
       identifier,

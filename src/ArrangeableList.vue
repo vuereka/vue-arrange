@@ -37,7 +37,9 @@ export type ArrangeableProps<T> = {
 
 type KeyItem = {
   payload: PayloadType;
-  key: unknown;
+  // TODO: put the correct type here
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  key: any;
 };
 
 const props = defineProps<ArrangeableProps<PayloadType>>();
