@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ArrangeableList, type MovingItem } from "../../src";
-import { tailwindColors } from "../colors";
+import { tailwindColors } from "./colors";
 
 type ItemType = { name: string; color: string; index: number };
 
@@ -10,7 +10,7 @@ const colors = ref<ItemType[]>(
     name: color,
     color: tailwindColors[color][300],
     index,
-  }))
+  })),
 );
 
 const dropItem = ({ destination }: MovingItem<ItemType>) => {
@@ -45,7 +45,6 @@ const reset = () => {
     </div>
     <ArrangeableList
       :list="colors"
-      list-key="color"
       :options="{
         hoverClass:
           'opacity-70 cursor-grabbing scale-150 drop-shadow-[0_10px_15px_rgba(0,0,0,0.25)]',

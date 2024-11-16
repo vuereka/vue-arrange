@@ -18,7 +18,7 @@ export type Target<PayloadType> = {
   type: "list" | "dropzone";
   listItems?: PayloadType[];
   index?: number;
-  meta?: any;
+  meta?: unknown;
 };
 
 export type MovingItem<PayloadType> = {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ArrangeableOptions, ArrangeableList } from "../../../src";
-import { TargetIdentifier, MovingItem } from "../../../src/types";
+import { ArrangeableOptions, ArrangeableList } from "../../src";
+import { TargetIdentifier, MovingItem } from "../../src/types";
 import { type ListType, ItemType } from "../KanBan.vue";
-import { useMovingItem } from "../../../src";
+import { useMovingItem } from "../../src";
 
 defineProps<{
   list: ListType;

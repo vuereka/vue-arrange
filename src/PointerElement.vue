@@ -6,9 +6,9 @@ const PointerElement = ref<HTMLElement>();
 
 const { x, y } = usePointer();
 
-// pointerenter and pointerleave are not being registered while pointerdown
+// Standard html events @pointerenter and @pointerleave are not being registered while pointerdown
 // That is why this is implemented.
-const isInside = computed<boolean>(() => {
+const isAbove = computed<boolean>(() => {
   const element = PointerElement.value as HTMLElement;
   const box = element.getBoundingClientRect();
   return (
@@ -25,11 +25,18 @@ const emit = defineEmits<{
 }>();
 
 defineExpose({
-  isInside,
+  isAbove,
+});
+
+defineProps({
+  tag: {
+    type: String,
+    default: "div",
+  },
 });
 
 onMounted(() => {
-  watch(isInside, (afterInside, beforeInside) => {
+  watch(isAbove, (afterInside, beforeInside) => {
     if (afterInside && !beforeInside) {
       emit("pointer-enter", PointerElement.value as HTMLElement);
     } else if (beforeInside && !afterInside) {
@@ -40,7 +47,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="PointerElement">
+  <component :is="tag" ref="PointerElement">
     <slot v-bind="$attrs" />
-  </div>
+  </component>
 </template>

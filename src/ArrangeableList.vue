@@ -1,7 +1,19 @@
 <script setup lang="ts" generic="PayloadType extends object">
 import { usePointer, useEventListener } from "@vueuse/core";
-import { ref, toRaw, onMounted, watch, computed, nextTick, Ref } from "vue";
+import {
+  ref,
+  toRaw,
+  onMounted,
+  watch,
+  computed,
+  nextTick,
+  Ref,
+  onUnmounted,
+  provide,
+  inject,
+} from "vue";
 import { useMovingItem } from "./useMovingItem.js";
+import { useArrangeableLists } from "./useArrangeableLists.js";
 import PointerElement from "./PointerElement.vue";
 import {
   type ArrangeableOptions,
@@ -12,19 +24,20 @@ import {
 
 // N.b. moving this type to types.ts will cause a compiler error.
 export type ArrangeableProps<T> = {
+  tag?: string;
   options?: ArrangeableOptions;
   list: T[];
   // Can we use an inferred key here, as in keyof PayloadType? It throws weird errors below.
   listKey?: string;
   identifier?: TargetIdentifier;
-  meta?: any;
+  meta?: unknown;
   group?: TargetIdentifier;
   targets?: TargetIdentifier | Array<TargetIdentifier>;
 };
 
 type KeyItem = {
   payload: PayloadType;
-  key: any;
+  key: unknown;
 };
 
 const props = defineProps<ArrangeableProps<PayloadType>>();
@@ -60,9 +73,10 @@ const homingEffectClass = computed<string>(() => {
 const pointer = usePointer();
 const { movingItem, isMoving, movingItemCanTarget } =
   useMovingItem<PayloadType>();
+const { addList, removeList } = useArrangeableLists();
 
 const hoverElement = ref<HTMLElement>();
-const listElement = ref<HTMLElement>();
+const listElement = ref<InstanceType<typeof PointerElement>>();
 let offsetX: number = 0;
 let offsetY: number = 0;
 let originItemBoundingBox: DOMRect | undefined;
@@ -164,36 +178,38 @@ const hoverOverItem = (index: number) => {
 };
 
 const leaveList = () => {
-  if (movingItem.value !== undefined) {
-    // N.b. if the v-for list inside the transitiongroup has a ref with a ref() constant in the setup function,
-    // leaving the list will go clunky. https://github.com/vuejs/core/issues/8173
-    const itemIndex = arrangedItems.value.indexOf(movingItem.value.payload);
-    if (itemIndex >= 0) {
-      keyItemsList.value.splice(itemIndex, 1);
-    }
-    if (movingItem.value.destination?.identifier === identifier.value) {
-      movingItem.value.destination = movingItem.value.origin;
-    }
+  if (movingItem.value === undefined) return;
+  // N.b. if the v-for list inside the transitiongroup has a ref with a ref() constant in the setup function,
+  // leaving the list will go clunky. https://github.com/vuejs/core/issues/8173
+  const itemIndex = arrangedItems.value.indexOf(movingItem.value.payload);
+  if (itemIndex >= 0) {
+    keyItemsList.value.splice(itemIndex, 1);
+  }
+  if (movingItem.value.destination?.identifier === identifier.value) {
+    movingItem.value.destination = movingItem.value.origin;
   }
 };
 
 const enterList = () => {
+  if (!movingItem.value) return;
   if (
-    movingItem.value &&
-    (movingItem.value.dropTargets.includes(identifier.value) ||
-      (props.group && movingItem.value.dropTargets.includes(props.group)))
-  ) {
-    if (arrangedItems.value.length === 0)
-      keyItemsList.value = [
-        { payload: movingItem.value.payload, key: movingItem.value.key },
-      ];
-    movingItem.value.destination = {
-      identifier: identifier.value,
-      type: "list",
-      listItems: arrangedItems.value,
-      meta: props.meta,
-    };
-  }
+    !(
+      movingItem.value.dropTargets.includes(identifier.value) ||
+      (props.group && movingItem.value.dropTargets.includes(props.group))
+    )
+  )
+    return;
+
+  if (arrangedItems.value.length === 0)
+    keyItemsList.value = [
+      { payload: movingItem.value.payload, key: movingItem.value.key },
+    ];
+  movingItem.value.destination = {
+    identifier: identifier.value,
+    type: "list",
+    listItems: arrangedItems.value,
+    meta: props.meta,
+  };
 };
 
 const applyClasses = (element: HTMLElement | undefined, classes: string) => {
@@ -254,7 +270,9 @@ const liftItem = (currentTarget: HTMLElement, { key, payload }: KeyItem) => {
     );
   });
 
-  emit("liftItem", toRaw(movingItem.value));
+  if (movingItem.value) {
+    emit("liftItem", toRaw(movingItem.value));
+  }
 };
 
 let pickupTimer: ReturnType<typeof setTimeout>;
@@ -344,19 +362,31 @@ useEventListener(document, "pointerup", () => {
 const beforeKey = Symbol();
 const afterKey = Symbol();
 
+// keep track of nested relationships
+const stackLevel = inject<number>("arrangeableListStackLevel", 0);
+provide<number>("arrangeableListStackLevel", stackLevel + 1);
+
 onMounted(() => {
+  addList(
+    identifier.value,
+    props.group,
+    stackLevel,
+    computed(() => listElement.value?.isAbove ?? false),
+    enterList,
+    leaveList,
+  );
   populateList(props.list);
   document.body.style.touchAction = "none";
+});
+
+onUnmounted(() => {
+  removeList(identifier.value);
+  document.body.style.touchAction = "";
 });
 </script>
 
 <template>
-  <PointerElement
-    @pointer-leave="leaveList"
-    @pointer-enter="enterList"
-    name="ArrangeableList"
-    ref="listElement"
-  >
+  <PointerElement name="ArrangeableList" ref="listElement" :tag="tag ?? 'div'">
     <TransitionGroup
       v-bind="
         !movingItem || movingItemCanTarget([identifier, group])

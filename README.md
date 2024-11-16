@@ -7,7 +7,8 @@ Component library to drag and drop items across lists in Vue3. Try out [here](ht
 Features:
 
 - Rearranging a component list. Dragging/dropping items from one list to another.
-- Nested lists (for making kanbans)
+- Nested lists (for making kanbans, see example)
+- Recursively stackable, see filesystem example
 - Fully customizable
 - sensible defaults for "homing effect" and sliding list transitions
 - Supports grab handles for list elements.
@@ -69,6 +70,8 @@ npm add vue-arrange
     - If `false`, no homing effect.
   - **handle**: `<boolean | string>`, default `false`
     - Indicate if the elements should be only dragged by a handle element. If `true`, any descendant elements with property: `name="handle"` are used as a handle. If `string` the name should be set to that string.
+  - **liftDelay**: `<number>`, default `0`
+    - time to wait after clicking before the item gets lifted up and starts hovering. Useful if single click needs to be used for something else.
 
 See [ArrangeableProps type](#type-arrangeablepropspayloadtype) below
 

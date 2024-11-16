@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import KanBanList from "./components/KanBanList.vue";
+import KanBanList from "./KanBanList.vue";
 import { ArrangeableList, DropZone, type MovingItem } from "../../src";
-import { randomColorMap } from "../colors";
+import { randomColorMap } from "./colors";
 
 export type ItemType = {
   id: symbol;
@@ -99,6 +99,7 @@ const dropItem = <T extends ListType | ItemType>(item: MovingItem<T>) => {
 const arrangeableOptions = {
   hoverClass:
     "opacity-70 cursor-grabbing drop-shadow-[0_10px_15px_rgba(0,0,0,0.75)] scale-110 -rotate-3",
+  pickedItemClass: "opacity-20",
 };
 
 const newListColor = ref(randomColorMap());

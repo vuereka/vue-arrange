@@ -1,33 +1,34 @@
 <script setup lang="ts">
-import ArrangeableList from "../../../src/ArrangeableList.vue";
-import { MovingItem, useMovingItem } from "../../../src";
+import ArrangeableList from "../../src/ArrangeableList.vue";
+import { MovingItem, useMovingItem } from "../../src";
 
-import { type TreeNode } from "../FileSystem.vue";
+import { type TreeNode } from "./FileSystem.vue";
 import Disclosure from "./Disclosure.vue";
 
 const { isMoving } = useMovingItem<TreeNode>();
 
-const props = defineProps<{
+defineProps<{
   toc: TreeNode[];
-  parent: symbol;
+  directory: symbol;
+  parent?: symbol;
 }>();
 
 const moveItem = (item: MovingItem<TreeNode>) => {
   item.payload.parent = item.destination?.identifier as symbol;
 };
 
-const expanded = "⏷";
-const collapsed = "⏵";
-const directory = "📁";
-const openDirectory = "📂";
-const file = "📄";
+const expandedIcon = "⏷";
+const collapsedIcon = "⏵";
+const directoryIcon = "📁";
+const openDirectoryIcon = "📂";
+const fileIcon = "📄";
 </script>
 
 <template>
   <ArrangeableList
-    :list="toc.filter((node) => node.parent === parent)"
-    :identifier="parent"
-    group="tree"
+    :list="toc.filter((node) => node.parent === directory)"
+    :identifier="directory"
+    group="directories"
     :options="{
       handle: 'treeHandle',
       pickedItemClass: 'bg-slate-200 rounded m-2 text-transparent',
@@ -36,6 +37,7 @@ const file = "📄";
     }"
     @drop-item="moveItem"
     v-slot="{ item }"
+    :parent="parent"
   >
     <Disclosure v-slot="{ open, toggle }">
       <div
@@ -46,19 +48,25 @@ const file = "📄";
           @click="toggle"
           :class="isMoving(item) && 'invisible'"
         >
-          {{ item.type === "directory" ? (open ? expanded : collapsed) : "" }}
-        </div>
-        <div name="treeHandle" class="ml-1 cursor-grab flex flex-row">
           {{
             item.type === "directory"
               ? open
-                ? openDirectory
-                : directory
-              : file
+                ? expandedIcon
+                : collapsedIcon
+              : ""
+          }}
+        </div>
+        <div name="treeHandle" class="ml-1 cursor-grab flex flex-row w-full">
+          {{
+            item.type === "directory"
+              ? open
+                ? openDirectoryIcon
+                : directoryIcon
+              : fileIcon
           }}
           <input
             name="treeHandle"
-            class="ml-2 w-full bg-transparent"
+            class="ml-2 w-full bg-transparent cursor-grab"
             :value="item.name"
             @change="
               ({ target }) => (item.name = (target as HTMLInputElement).value)
@@ -67,13 +75,20 @@ const file = "📄";
             @mousedown.prevent
             @keyup.enter="($event.target as HTMLInputElement).blur()"
           />
+          <div class="ml-auto text-slate-400">
+            {{ item.created!.toLocaleDateString() }}
+          </div>
         </div>
       </div>
       <div
         v-if="open && !isMoving(item)"
         class="ml-10 border-l-2 border-slate-300"
       >
-        <FileSystemDirectory :toc="toc" :parent="item.id" />
+        <FileSystemDirectory
+          :toc="toc"
+          :directory="item.id"
+          :parent="directory"
+        />
       </div>
     </Disclosure>
   </ArrangeableList>
