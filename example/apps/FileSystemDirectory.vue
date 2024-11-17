@@ -29,10 +29,12 @@ const fileIcon = "📄";
       :list="toc.filter((node) => node.parent === directory)"
     :identifier="directory"
     group="directories"
+    class="rounded m-1"
     :options="{
       handle: 'treeHandle',
-      pickedItemClass: 'bg-slate-200 rounded m-2 text-transparent',
+      pickedItemClass: 'bg-blue-200 rounded m-2 text-transparent',
       hoverClass: 'opacity-70 cursor-grabbing',
+      hoveredOverListClass: 'bg-sky-100',
       liftDelay: 200,
     }"
     @drop-item="moveItem"

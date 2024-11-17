@@ -3,6 +3,7 @@ import { Ref, TransitionGroupProps } from "vue";
 export type ArrangeableOptions = {
   defaultItemClass?: string;
   pickedItemClass?: string;
+  hoveredOverListClass?: string;
   listTransition?: TransitionGroupProps;
   hoverTransitionClass?: string;
   hoverClass?: string;

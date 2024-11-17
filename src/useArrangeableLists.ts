@@ -1,4 +1,4 @@
-import { ComputedRef, reactive, ref, watch } from "vue";
+import { computed, ComputedRef, reactive, ref, watch } from "vue";
 import { TargetIdentifier } from "./types";
 import { useMovingItem } from "./useMovingItem";
 
@@ -16,6 +16,7 @@ type List = {
 // an array of list identifiers and their identifying properties
 const lists = reactive<Record<TargetIdentifier, List>>({});
 const listUnderPointer = ref<List | undefined>(undefined);
+const targetedListIdentifier = computed(() => listUnderPointer.value?.identifier);
 
 watch(
   () =>
@@ -66,5 +67,6 @@ export const useArrangeableLists = () => {
   return {
     addList,
     removeList,
+    targetedList: targetedListIdentifier,
   };
 };

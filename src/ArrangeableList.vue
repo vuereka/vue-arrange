@@ -50,6 +50,7 @@ const identifier = computed(() => props.identifier ?? defaultIdentifier);
 const defaultOptions: ArrangeableOptions = {
   defaultItemClass: "",
   pickedItemClass: "arrangeable-list__invisible",
+  hoveredOverListClass: "",
   listTransition: {
     moveClass: "arrangeable-list__transition-all",
     leaveActiveClass: "arrangeable-list__absolute",
@@ -75,7 +76,7 @@ const homingEffectClass = computed<string>(() => {
 const pointer = usePointer();
 const { movingItem, isMoving, movingItemCanTarget } =
   useMovingItem<PayloadType>();
-const { addList, removeList } = useArrangeableLists();
+const { addList, removeList, targetedList } = useArrangeableLists();
 
 const hoverElement = ref<HTMLElement>();
 const listElement = ref<InstanceType<typeof PointerElement>>();
@@ -179,6 +180,9 @@ const hoverOverItem = (index: number) => {
   movingItem.value.destination.listItems = arrangedItems.value;
 };
 
+/**
+ * triggered when the mouse cursor leaves this list while dragging something that targets this list.
+ */
 const leaveList = () => {
   if (movingItem.value === undefined) return;
   // N.b. if the v-for list inside the transitiongroup has a ref with a ref() constant in the setup function,
@@ -192,16 +196,12 @@ const leaveList = () => {
   }
 };
 
+/**
+ * triggered when the mouse cursor enters this list while dragging something that targets this list.
+ */
 const enterList = () => {
   if (!movingItem.value) return;
-  if (
-    !(
-      movingItem.value.dropTargets.includes(identifier.value) ||
-      (props.group && movingItem.value.dropTargets.includes(props.group))
-    )
-  )
-    return;
-
+  
   if (arrangedItems.value.length === 0)
     keyItemsList.value = [
       { payload: movingItem.value.payload, key: movingItem.value.key },
@@ -368,6 +368,8 @@ const afterKey = Symbol();
 const stackLevel = inject<number>("arrangeableListStackLevel", 0);
 provide<number>("arrangeableListStackLevel", stackLevel + 1);
 
+const candidateHoversOver = computed<boolean>(() => targetedList.value === identifier.value);
+
 onMounted(() => {
   addList(
     identifier.value,
@@ -388,7 +390,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <PointerElement name="ArrangeableList" ref="listElement" :tag="tag ?? 'div'">
+  <PointerElement name="ArrangeableList" ref="listElement" :tag="tag ?? 'div'" :class="candidateHoversOver ? options.hoveredOverListClass : ''">
     <TransitionGroup
       v-bind="
         !movingItem || movingItemCanTarget([identifier, group])
