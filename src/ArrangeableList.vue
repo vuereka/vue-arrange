@@ -422,8 +422,7 @@ onUnmounted(() => {
             : options.defaultItemClass
         "
         @touchstart.left.prevent="pickupItem($event, item)"
-        @pointerdown.left.stop
-        ="pickupItem($event, item)"
+        @pointerdown.left.stop="pickupItem($event, item)"
         @pointer-enter="hoverOverItem(index)"
       >
         <slot
