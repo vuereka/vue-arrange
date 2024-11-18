@@ -48,10 +48,10 @@ npm add vue-arrange
   - Group the list belongs to. Items can be moved across member lists of this group.
 - **targets**: `<TargetIdentifier | TargetIdentifier[]>`, optional
   - By supplying one or more targets, items from this list can only be moved to those groups/lists.
-- **tag**: `<string>`, default: `'div'`
-  - HTML tag to use for the rendered list. E.g. `'ol'` or `'ul'`.
-- **listItemTag**: `<string>`, default: `'div'`
-  - HTML tag to use for rendered list items. E.g. `'li'`.
+- **tag**: `<string>`, default: `'ul'`
+  - HTML tag to use for the rendered list. E.g. `'ol'` or `'div'`.
+- **listItemTag**: `<string>`, default: `'li'`
+  - HTML tag to use for rendered list items. 
 - **meta**: <any>, optional
   - any information you wish to send along with items that get picked up.
 - **options**: `<ArrangeableOptions>`, optional; options passed to the ArrangeableList.
