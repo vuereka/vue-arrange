@@ -25,6 +25,7 @@ import {
 // N.b. moving this type to types.ts will cause a compiler error.
 export type ArrangeableProps<T> = {
   tag?: string;
+  listItemTag?: string;
   options?: ArrangeableOptions;
   list: T[];
   // Can we use an inferred key here, as in keyof PayloadType? It throws weird errors below.
@@ -201,7 +202,7 @@ const leaveList = () => {
  */
 const enterList = () => {
   if (!movingItem.value) return;
-  
+
   if (arrangedItems.value.length === 0)
     keyItemsList.value = [
       { payload: movingItem.value.payload, key: movingItem.value.key },
@@ -368,7 +369,9 @@ const afterKey = Symbol();
 const stackLevel = inject<number>("arrangeableListStackLevel", 0);
 provide<number>("arrangeableListStackLevel", stackLevel + 1);
 
-const candidateHoversOver = computed<boolean>(() => targetedList.value === identifier.value);
+const candidateHoversOver = computed<boolean>(
+  () => targetedList.value === identifier.value,
+);
 
 onMounted(() => {
   addList(
@@ -390,7 +393,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <PointerElement name="ArrangeableList" ref="listElement" :tag="tag ?? 'div'" :class="candidateHoversOver ? options.hoveredOverListClass : ''">
+  <PointerElement
+    name="ArrangeableList"
+    ref="listElement"
+    :tag="tag ?? 'ul'"
+    :class="candidateHoversOver ? options.hoveredOverListClass : ''"
+  >
     <TransitionGroup
       v-bind="
         !movingItem || movingItemCanTarget([identifier, group])
@@ -398,12 +406,13 @@ onUnmounted(() => {
           : {} // fix for vue bug https://github.com/vuejs/core/issues/5385
       "
     >
-      <div :key="beforeKey">
+      <component :is="listItemTag ?? 'li'" :key="beforeKey">
         <slot name="before" :arrangedItems="arrangedItems" />
-      </div>
+      </component>
       <PointerElement
         v-for="(item, index) in keyItemsList || []"
         :key="item.key"
+        :tag="listItemTag ?? 'li'"
         :id="
           isMoving(item.payload) ? 'arrangeable-list-target-element' : undefined
         "
@@ -413,7 +422,8 @@ onUnmounted(() => {
             : options.defaultItemClass
         "
         @touchstart.left.prevent="pickupItem($event, item)"
-        @pointerdown.left.stop="pickupItem($event, item)"
+        @pointerdown.left.stop
+        ="pickupItem($event, item)"
         @pointer-enter="hoverOverItem(index)"
       >
         <slot
@@ -423,6 +433,7 @@ onUnmounted(() => {
       </PointerElement>
       <PointerElement
         :key="afterKey"
+        :tag="listItemTag ?? 'li'"
         @pointer-enter="hoverOverItem(keyItemsList.length)"
       >
         <slot name="after" :arrangedItems="arrangedItems" />

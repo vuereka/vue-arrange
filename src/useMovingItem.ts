@@ -12,7 +12,7 @@ export const useMovingItem = <PayloadType>() => {
   function movingItemCanTarget(targets: Array<TargetIdentifier | undefined>) {
     if (movingItem.value === undefined) return false;
     return movingItem.value.dropTargets.some(
-      (target) => target !== undefined && targets.includes(target)
+      (target) => target !== undefined && targets.includes(target),
     );
   }
 

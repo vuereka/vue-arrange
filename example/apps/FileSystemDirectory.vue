@@ -26,13 +26,13 @@ const fileIcon = "📄";
 
 <template>
   <ArrangeableList
-      :list="toc.filter((node) => node.parent === directory)"
+    :list="toc.filter((node) => node.parent === directory)"
     :identifier="directory"
     group="directories"
-    class="rounded m-1"
+    class="rounded m-1 p-1"
     :options="{
       handle: 'treeHandle',
-      pickedItemClass: 'bg-blue-200 rounded m-2 text-transparent',
+      pickedItemClass: 'hidden bg-blue-200 rounded text-transparent',
       hoverClass: 'opacity-70 cursor-grabbing',
       hoveredOverListClass: 'bg-sky-100',
       liftDelay: 200,
@@ -43,7 +43,7 @@ const fileIcon = "📄";
   >
     <Disclosure v-slot="{ open, toggle }">
       <div
-        class="m-2 flex items-center whitespace-normal break-words p-1 text-xl select-none"
+        class="flex items-center whitespace-normal break-words p-1 text-xl select-none"
       >
         <div
           class="w-4 cursor-pointer text-slate-400"

@@ -16,7 +16,9 @@ type List = {
 // an array of list identifiers and their identifying properties
 const lists = reactive<Record<TargetIdentifier, List>>({});
 const listUnderPointer = ref<List | undefined>(undefined);
-const targetedListIdentifier = computed(() => listUnderPointer.value?.identifier);
+const targetedListIdentifier = computed(
+  () => listUnderPointer.value?.identifier,
+);
 
 watch(
   () =>

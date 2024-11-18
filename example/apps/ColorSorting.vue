@@ -44,6 +44,8 @@ const reset = () => {
       </button>
     </div>
     <ArrangeableList
+      tag="ul"
+      list-item-tag="li"
       :list="colors"
       :options="{
         hoverClass:
