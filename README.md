@@ -51,7 +51,7 @@ npm add vue-arrange
 - **tag**: `<string>`, default: `'ul'`
   - HTML tag to use for the rendered list. E.g. `'ol'` or `'div'`.
 - **listItemTag**: `<string>`, default: `'li'`
-  - HTML tag to use for rendered list items. 
+  - HTML tag to use for rendered list items.
 - **meta**: <any>, optional
   - any information you wish to send along with items that get picked up.
 - **options**: `<ArrangeableOptions>`, optional; options passed to the ArrangeableList.
