@@ -439,24 +439,27 @@ onUnmounted(() => {
       </PointerElement>
     </TransitionGroup>
     <Transition
-      tag="div"
       ref="hoverElement"
       v-if="movingItem && movingItem.origin.identifier === identifier"
-      :style="{
-        left: pointer.x.value - offsetX + 'px',
-        top: pointer.y.value - offsetY + 'px',
-        width: originItemBoundingBox?.width + 'px',
-        height: originItemBoundingBox?.height + 'px',
-        '--landingzone-top': homingArea?.top + 'px',
-        '--landingzone-left': homingArea?.left + 'px',
-        '--landingzone-right': homingArea?.right + 'px',
-        '--landingzone-bottom': homingArea?.bottom + 'px',
-        '--landingzone-width': homingArea?.width + 'px',
-        '--landingzone-height': homingArea?.height + 'px',
-      }"
-      style="z-index: 100000000; position: absolute"
     >
-      <slot :item="movingItem.payload" />
+      <component
+        :is="listItemTag ?? 'li'"
+        :style="{
+          left: pointer.x.value - offsetX + 'px',
+          top: pointer.y.value - offsetY + 'px',
+          width: originItemBoundingBox?.width + 'px',
+          height: originItemBoundingBox?.height + 'px',
+          '--landingzone-top': homingArea?.top + 'px',
+          '--landingzone-left': homingArea?.left + 'px',
+          '--landingzone-right': homingArea?.right + 'px',
+          '--landingzone-bottom': homingArea?.bottom + 'px',
+          '--landingzone-width': homingArea?.width + 'px',
+          '--landingzone-height': homingArea?.height + 'px',
+        }"
+        style="z-index: 100000000; position: absolute"
+      >
+        <slot :item="movingItem.payload" />
+      </component>
     </Transition>
   </PointerElement>
 </template>
