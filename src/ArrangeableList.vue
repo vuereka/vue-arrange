@@ -418,7 +418,7 @@ onUnmounted(() => {
         "
         :class="
           isMoving(item.payload)
-            ? options.pickedItemClass
+            ? [options.defaultItemClass, options.pickedItemClass].join(' ')
             : options.defaultItemClass
         "
         @touchstart.left.prevent="pickupItem($event, item)"
