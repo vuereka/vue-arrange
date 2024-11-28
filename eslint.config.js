@@ -4,7 +4,10 @@ import tseslint from "typescript-eslint";
 import pluginVue from "eslint-plugin-vue";
 
 export default [
-  { files: ["**/*.{js,mjs,cjs,ts,vue}"] },
+  { 
+    files: ["src/**/*.{js,mjs,cjs,ts,vue}", "example/**/*.{js,mjs,cjs,ts,vue}", "*.{js,ts,json}"] ,
+  },
+  
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
