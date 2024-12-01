@@ -56,7 +56,7 @@ npm add vue-arrange
   - any information you wish to send along with items that get picked up.
 - **options**: `<ArrangeableOptions>`, optional; options passed to the ArrangeableList.
   - **defaultItemClass**: `<string>`
-    - css classes to place on all list items except the lifted one.
+    - css classes to place on all list items.
   - **pickedItemClass**: `<string>`
     - css classes to place on the original of the list item being picked up.
     - By default: 'invisible' built-in class (see below).
