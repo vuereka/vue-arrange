@@ -11,7 +11,9 @@ export default [
       "*.{js,ts}",
     ],
   },
-
+  {
+    ignores: ["docs/**"],
+  },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,

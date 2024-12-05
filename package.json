@@ -40,8 +40,8 @@
   },
   "scripts": {
     "dev": "vite -c ./vite.config.ts ./example/",
-    "build": "vite build && vue-tsc --declaration --emitDeclarationOnly",
-    "build_example": "vite build --mode example -c ./vite.config.ts ./example/",
+    "build": "vite build && vue-tsc --declaration --emitDeclarationOnly; pnpm run build-demo",
+    "build-demo": "vite build --mode example -c ./vite.config.ts ./example/",
     "preview": "vite preview --mode example -c ./vite.config.ts ./example/",
     "prepare": "husky"
   },
