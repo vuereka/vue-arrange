@@ -124,7 +124,7 @@ const newListColor = ref(randomColorMap());
           :style="{ backgroundColor: list.color[100] }"
         >
           <div class="flex border-none p-2 text-2xl font-bold">
-            <div name="listHandle" class="mr-2 cursor-grab select-none">
+            <div data-handle="listHandle" class="mr-2 cursor-grab select-none">
               &#65049;
             </div>
             <input

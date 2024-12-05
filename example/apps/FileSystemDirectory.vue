@@ -31,15 +31,14 @@ const fileIcon = "📄";
     group="directories"
     class="rounded m-1 p-1"
     :options="{
-      handle: 'treeHandle',
+      handle: true,
       pickedItemClass: 'hidden bg-blue-200 rounded text-transparent',
-      hoverClass: 'opacity-70 cursor-grabbing',
+      hoverClass: 'opacity-80 bg-white cursor-grabbing rounded',
       hoveredOverListClass: 'bg-sky-100',
       liftDelay: 200,
     }"
     @drop-item="moveItem"
     v-slot="{ item }"
-    :parent="parent"
   >
     <Disclosure v-slot="{ open, toggle }">
       <div
@@ -58,7 +57,7 @@ const fileIcon = "📄";
               : ""
           }}
         </div>
-        <div name="treeHandle" class="ml-1 cursor-grab flex flex-row w-full">
+        <div data-handle class="ml-1 cursor-grab flex flex-row w-full">
           {{
             item.type === "directory"
               ? open
@@ -67,7 +66,7 @@ const fileIcon = "📄";
               : fileIcon
           }}
           <input
-            name="treeHandle"
+            data-handle
             class="ml-2 w-full bg-transparent cursor-grab"
             :value="item.name"
             @change="

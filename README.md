@@ -73,7 +73,7 @@ npm add vue-arrange
     - If `string`, applies given CSS classes as the homing effect.
     - If `false`, no homing effect.
   - **handle**: `<boolean | string>`, default `false`
-    - Indicate if the elements should be only dragged by a handle element. If `true`, any descendant elements with property: `name="handle"` are used as a handle. If `string` the name should be set to that string.
+    - Indicate if the elements should be only dragged by a handle element. If `true`, any descendant elements with property: `data-handle` are used as a handle. If it is set to a `string`, the `data-handle` of the handle should be set to that string.
   - **liftDelay**: `<number>`, default `0`
     - time to wait after clicking before the item gets lifted up and starts hovering. Useful if single click needs to be used for something else.
 

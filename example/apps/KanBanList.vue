@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrangeableOptions, ArrangeableList } from "../../src";
 import { TargetIdentifier, MovingItem } from "../../src/types";
-import { type ListType, ItemType } from "../KanBan.vue";
+import { type ListType, ItemType } from "./KanBan.vue";
 import { useMovingItem } from "../../src";
 
 defineProps<{
@@ -42,7 +42,7 @@ const addItem = ($event: InputEvent, listIdentifier: symbol) => {
         class="m-1 flex items-center whitespace-normal break-words rounded border-2 border-black p-2 text-xl"
         :style="{ backgroundColor: list.color[300] }"
       >
-        <div name="cardHandle" class="mr-2 cursor-grab select-none">
+        <div data-handle="cardHandle" class="mr-2 cursor-grab select-none">
           &#65049;
         </div>
         {{ item.description }}

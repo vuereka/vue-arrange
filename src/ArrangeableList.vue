@@ -230,9 +230,7 @@ const removeClasses = (element: HTMLElement | undefined, classes: string) => {
 };
 
 const handleName = computed(() => {
-  return typeof options.value.handle === "string"
-    ? options.value.handle
-    : "handle";
+  return typeof options.value.handle === "string" ? options.value.handle : "";
 });
 
 const liftItem = (currentTarget: HTMLElement, { key, payload }: KeyItem) => {
@@ -283,7 +281,7 @@ const pickupItem = (event: PointerEvent, item: KeyItem) => {
   const { target, currentTarget } = event;
   if (
     options.value.handle &&
-    (target as HTMLElement)?.getAttribute("name") !== handleName.value
+    (target as HTMLElement)?.getAttribute("data-handle") !== handleName.value
   )
     return;
 
