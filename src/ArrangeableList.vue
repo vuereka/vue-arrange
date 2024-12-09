@@ -138,13 +138,12 @@ const emit = defineEmits<{
  * @param index: index of the item hovered over.
  */
 const hoverOverItem = (index: number) => {
-  if (
-    !movingItem.value ||
-    movingItem.value?.destination?.identifier !== identifier.value ||
-    isMoving(arrangedItems.value[index])
-  ) {
-    return;
-  }
+  // sanity checks:
+  if (!movingItem.value) return;
+  if (movingItem.value?.destination?.identifier !== identifier.value) return;
+
+  // Do not do anything when hovering over itself
+  if (isMoving(arrangedItems.value[index])) return;
 
   // if the dragging item does not appear in the list, add it
   if (
@@ -210,6 +209,7 @@ const enterList = () => {
   movingItem.value.destination = {
     identifier: identifier.value,
     type: "list",
+    group: props.group,
     listItems: arrangedItems.value,
     meta: props.meta,
   };
@@ -242,6 +242,7 @@ const liftItem = (currentTarget: HTMLElement, { key, payload }: KeyItem) => {
   const origin: Target<PayloadType> = {
     identifier: identifier.value,
     type: "list",
+    group: props.group,
     listItems: arrangedItems.value,
     index: originIndex,
   };
