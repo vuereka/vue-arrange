@@ -12,7 +12,7 @@ export default [
     ],
   },
   {
-    ignores: ["docs/**"],
+    ignores: ["docs/**", "node_modules/**", "dist/**"],
   },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
