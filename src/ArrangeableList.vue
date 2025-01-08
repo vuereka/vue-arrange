@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="PayloadType extends object">
-import { usePointer, useEventListener } from "@vueuse/core";
+import { usePointer, useEventListener, useWindowScroll } from "@vueuse/core";
 import {
   ref,
   toRaw,
@@ -75,6 +75,8 @@ const homingEffectClass = computed<string>(() => {
 });
 
 const pointer = usePointer();
+const { x: scrollX, y: scrollY } = useWindowScroll();
+
 const { movingItem, isMoving, movingItemCanTarget } =
   useMovingItem<PayloadType>();
 const { addList, removeList, targetedList } = useArrangeableLists();
@@ -238,6 +240,7 @@ const liftItem = (currentTarget: HTMLElement, { key, payload }: KeyItem) => {
 
   offsetX = pointer.x.value - originItemBoundingBox.x;
   offsetY = pointer.y.value - originItemBoundingBox.y;
+
   const originIndex = arrangedItems.value.indexOf(payload);
   const origin: Target<PayloadType> = {
     identifier: identifier.value,
@@ -444,8 +447,8 @@ onUnmounted(() => {
       <component
         :is="listItemTag ?? 'li'"
         :style="{
-          left: pointer.x.value - offsetX + 'px',
-          top: pointer.y.value - offsetY + 'px',
+          left: pointer.x.value - offsetX + scrollX + 'px',
+          top: pointer.y.value - offsetY + scrollY + 'px',
           width: originItemBoundingBox?.width + 'px',
           height: originItemBoundingBox?.height + 'px',
           '--landingzone-top': homingArea?.top + 'px',
