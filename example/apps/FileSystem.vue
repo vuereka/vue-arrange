@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, provide, reactive, ref } from "vue";
 import FileSystemDirectory from "./FileSystemDirectory.vue";
 
 export type TreeNode = {
@@ -60,30 +60,49 @@ const sortedToc = computed(() => {
     return a.created!.getTime() - b.created!.getTime();
   });
 });
+
+const expandAll = ref<boolean | undefined>(false);
+provide("expandAll", expandAll);
 </script>
 
 <template>
   <div class="border-black border rounded-lg m-2 w-1/2">
     <div
       name="Controls"
-      class="flex flex-col border border-1 rounded m-1 border-slate-300"
+      class="flex flex-row justify-between border border-1 rounded m-1 border-slate-300"
     >
-      <div name="Sorting control">
-        <label for="sortDropdown" class="m-2">Sort by:</label>
-        <select id="sortDropdown" v-model="sortBy" class="m-2 p-1">
-          <option value="none">-</option>
-          <option value="name">Name</option>
-          <option value="created">Created</option>
-        </select>
+      <div class="flex flex-col">
+        <div name="Sorting control">
+          <label for="sortDropdown" class="m-2">Sort by:</label>
+          <select id="sortDropdown" v-model="sortBy" class="m-2 p-1">
+            <option value="none">-</option>
+            <option value="name">Name</option>
+            <option value="created">Created</option>
+          </select>
+        </div>
+        <div name="Directories first control">
+          <label for="directoriesFirst" class="m-2">Directories first:</label>
+          <input
+            id="directoriesFirst"
+            type="checkbox"
+            v-model="directoriesFirst"
+            class="m-2 p-1"
+          />
+        </div>
       </div>
-      <div name="Directories first control">
-        <label for="directoriesFirst" class="m-2">Directories first:</label>
-        <input
-          id="directoriesFirst"
-          type="checkbox"
-          v-model="directoriesFirst"
-          class="m-2 p-1"
-        />
+      <div name="Expand/collapse controls" class="flex flex-col">
+        <button
+          @click="expandAll = true"
+          class="rounded bg-slate-200 m-1 p-1 border-black border-2"
+        >
+          Expand all
+        </button>
+        <button
+          @click="expandAll = false"
+          class="rounded bg-slate-200 m-1 p-1 border-black border-2"
+        >
+          Collapse all
+        </button>
       </div>
     </div>
     <div class="ml-14 p-1 font-bold flex flex-row w-full">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ArrangeableList from "../../src/ArrangeableList.vue";
+import FileSystemDirectory from "./FileSystemDirectory.vue";
 import { MovingItem, useMovingItem } from "../../src";
 
 import { type TreeNode } from "./FileSystem.vue";
@@ -46,7 +47,7 @@ const fileIcon = "📄";
       >
         <div
           class="w-4 cursor-pointer text-slate-400"
-          @click="toggle"
+          @click="() => toggle()"
           :class="isMoving(item) && 'invisible'"
         >
           {{
@@ -82,13 +83,15 @@ const fileIcon = "📄";
         </div>
       </div>
       <div
-        v-if="open && !isMoving(item)"
+        v-if="item.type === 'directory' && open && !isMoving(item)"
         class="ml-10 border-l-2 border-slate-300"
       >
         <FileSystemDirectory
           :toc="toc"
           :directory="item.id"
           :parent="directory"
+          ref="nestedDirectory"
+          class="min-h-5"
         />
       </div>
     </Disclosure>
