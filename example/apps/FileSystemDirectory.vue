@@ -33,7 +33,7 @@ const fileIcon = "📄";
     class="rounded m-1 p-1"
     :options="{
       handle: true,
-      pickedItemClass: 'hidden bg-blue-200 rounded text-transparent',
+      pickedItemClass: 'h-0 bg-blue-200 rounded text-transparent',
       hoverClass: 'opacity-80 bg-white cursor-grabbing rounded',
       hoveredOverListClass: 'bg-sky-100',
       liftDelay: 200,

@@ -306,7 +306,18 @@ const setHomingArea = () => {
     document
       .getElementById("arrangeable-list-target-element")
       ?.getBoundingClientRect() ?? originItemBoundingBox;
+  if (homingArea.value)
+    homingArea.value = {
+      ...homingArea.value,
+      top: homingArea.value.top + scrollY.value,
+      left: homingArea.value.left + scrollX.value,
+      right: homingArea.value.right + scrollX.value,
+      bottom: homingArea.value.bottom + scrollY.value,
+      x: homingArea.value.x + scrollX.value,
+      y: homingArea.value.y + scrollY.value,
+    };
 };
+
 const homingArea = ref<DOMRect | undefined>();
 /**
  * dropItem happens when an element from this ArrangedList is dropped somewhere.
