@@ -135,6 +135,8 @@ const emit = defineEmits<{
   (e: "dropItem", item: MovingItem<PayloadType>): void;
 }>();
 
+let moverIndex: number | null = null;
+
 /**
  * triggered when the mouse cursor enters a list item while dragging something.
  * @param index: index of the item hovered over.
@@ -147,12 +149,14 @@ const hoverOverItem = (index: number) => {
   // Do not do anything when hovering over itself
   if (isMoving(arrangedItems.value[index])) return;
 
-  // if the dragging item does not appear in the list, add it
-  if (
-    keyItemsList.value.findIndex(
+  console.log("hovering over item ");
+  if (moverIndex === null)
+    moverIndex = keyItemsList.value.findIndex(
       ({ payload }) => payload === movingItem.value?.payload,
-    ) === -1
-  ) {
+    );
+
+  // if the dragging item does not appear in the list, add it
+  if (moverIndex === -1) {
     keyItemsList.value.splice(index, 0, {
       payload: movingItem.value.payload,
       key: movingItem.value.key,
@@ -160,24 +164,11 @@ const hoverOverItem = (index: number) => {
   }
   // else move it
   else {
-    const moverIndex = keyItemsList.value.findIndex(
-      ({ payload }) => payload === movingItem.value?.payload,
-    );
-    keyItemsList.value =
-      moverIndex < index
-        ? [
-            ...keyItemsList.value.slice(0, moverIndex),
-            ...keyItemsList.value.slice(moverIndex + 1, index + 1),
-            keyItemsList.value[moverIndex],
-            ...keyItemsList.value.slice(index + 1),
-          ]
-        : [
-            ...keyItemsList.value.slice(0, index),
-            keyItemsList.value[moverIndex],
-            ...keyItemsList.value.slice(index, moverIndex),
-            ...keyItemsList.value.slice(moverIndex + 1),
-          ];
+    const [movedItem] = keyItemsList.value.splice(moverIndex, 1);
+    keyItemsList.value.splice(index, 0, movedItem);
   }
+
+  moverIndex = index;
   movingItem.value.destination.index = index;
   movingItem.value.destination.listItems = arrangedItems.value;
 };
@@ -196,6 +187,7 @@ const leaveList = () => {
   if (movingItem.value.destination?.identifier === identifier.value) {
     movingItem.value.destination = movingItem.value.origin;
   }
+  moverIndex = null;
 };
 
 /**
@@ -215,6 +207,7 @@ const enterList = () => {
     listItems: arrangedItems.value,
     meta: props.meta,
   };
+  moverIndex = null;
 };
 
 const applyClasses = (element: HTMLElement | undefined, classes: string) => {
@@ -369,7 +362,9 @@ const dropItem = () => {
   // repopulation is needed in case the drop event did not trigger a props change
   // otherwise the dropped item disappears.
   populateList(props.list);
+  moverIndex = null;
 };
+
 useEventListener(document, "pointerup", () => {
   cancelPickup();
   dropItem();
@@ -485,8 +480,9 @@ onUnmounted(() => {
   transition-duration: 150ms;
 }
 .arrangeable-list__transition-all-but-location {
-  transition-property: opacity, transform, box-shadow, background-color,
-    border-color, color, fill, stroke, padding, margin;
+  transition-property:
+    opacity, transform, box-shadow, background-color, border-color, color, fill,
+    stroke, padding, margin;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
