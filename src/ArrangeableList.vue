@@ -135,8 +135,6 @@ const emit = defineEmits<{
   (e: "dropItem", item: MovingItem<PayloadType>): void;
 }>();
 
-let moverIndex: number | null = null;
-
 /**
  * triggered when the mouse cursor enters a list item while dragging something.
  * @param index: index of the item hovered over.
@@ -149,8 +147,8 @@ const hoverOverItem = (index: number) => {
   // Do not do anything when hovering over itself
   if (isMoving(arrangedItems.value[index])) return;
 
-  console.log("hovering over item ");
-  if (moverIndex === null)
+  let moverIndex = movingItem.value.destination.index;
+  if (moverIndex === undefined)
     moverIndex = keyItemsList.value.findIndex(
       ({ payload }) => payload === movingItem.value?.payload,
     );
@@ -168,7 +166,6 @@ const hoverOverItem = (index: number) => {
     keyItemsList.value.splice(index, 0, movedItem);
   }
 
-  moverIndex = index;
   movingItem.value.destination.index = index;
   movingItem.value.destination.listItems = arrangedItems.value;
 };
@@ -187,7 +184,6 @@ const leaveList = () => {
   if (movingItem.value.destination?.identifier === identifier.value) {
     movingItem.value.destination = movingItem.value.origin;
   }
-  moverIndex = null;
 };
 
 /**
@@ -207,7 +203,6 @@ const enterList = () => {
     listItems: arrangedItems.value,
     meta: props.meta,
   };
-  moverIndex = null;
 };
 
 const applyClasses = (element: HTMLElement | undefined, classes: string) => {
@@ -362,7 +357,6 @@ const dropItem = () => {
   // repopulation is needed in case the drop event did not trigger a props change
   // otherwise the dropped item disappears.
   populateList(props.list);
-  moverIndex = null;
 };
 
 useEventListener(document, "pointerup", () => {
